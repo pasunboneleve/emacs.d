@@ -10,7 +10,11 @@
   :commands jtsx-install-treesit-language
   :hook ((jtsx-jsx-mode . hs-minor-mode)
          (jtsx-tsx-mode . hs-minor-mode)
-         (jtsx-typescript-mode . hs-minor-mode))
+         (jtsx-typescript-mode . hs-minor-mode)
+         (jsx-typescript-mode . smartparens-strict-mode)
+         (jtsx-tsx-mode . smartparens-strict-mode)
+         (jtsx-typescript-mode . smartparens-strict-mode))
+
   :custom
   ;; Optional customizations
   (js-indent-level 2)

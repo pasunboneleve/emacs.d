@@ -59,6 +59,14 @@
                              ("C-{" . puni-barf-backward)
                              ("C-k" . nil))))
 
+;; fallback from puni
+(use-package smartparens
+  :bind (:map smartparens-mode-map
+              ("C-)" . sp-forward-slurp-sexp)
+              ("C-(" . sp-backward-slurp-sexp)
+              ("C-}" . sp-forward-barf-sexp)
+              ("C-{" . sp-backward-barf-sexp)))
+
 ;; source editing and movement using treesitter when available
 (use-package combobulate
   :ensure (combobulate :host github :repo "dmvianna/combobulate"))
