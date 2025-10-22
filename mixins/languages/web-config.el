@@ -3,6 +3,11 @@
 ;;; All things web
 ;;; Code:
 
+(add-to-list 'major-mode-remap-alist '(html-mode . html-ts-mode))
+(add-to-list 'major-mode-remap-alist '(css-mode . css-ts-mode))
+(add-to-list 'major-mode-remap-alist '(js-mode . js-ts-mode))
+(add-to-list 'major-mode-remap-alist '(typescript-mode . typescript-ts-mode))
+
 (use-package jtsx
   :mode (("\\.jsx?\\'" . jtsx-jsx-mode)
          ("\\.tsx\\'" . jtsx-tsx-mode)
@@ -66,8 +71,6 @@
                 (tide-setup)))))
 
 (use-package web-mode
-  :mode (("\\.html?\\'" . web-mode))
-
   :custom
   (web-mode-markup-indent-offset 2)
   (web-mode-css-indent-offset 2)
@@ -78,6 +81,10 @@
   (web-mode-enable-auto-pairing t)
   (web-mode-enable-comment-keywords t)
   (web-mode-enable-current-element-highlight t))
+
+(use-package html-ts-mode
+  :ensure nil
+    :mode (("\\.html?\\'" . html-ts-mode)))
 
 (use-package tide
   :commands tide-setup
