@@ -69,6 +69,7 @@
 
 ;; source editing and movement using treesitter when available
 (use-package combobulate
+  :hook ((prog-mode . combobulate-mode))
   :ensure (combobulate :host github :repo "dmvianna/combobulate"))
 
 ;;; save lots of undo history
