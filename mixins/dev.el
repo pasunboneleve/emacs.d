@@ -73,8 +73,7 @@
   :ensure (combobulate :host github :repo "dmvianna/combobulate"))
 
 ;; easily find other similar symbols in buffer
-(use-package smartscan
-  :hook ((after-change-major-mode . smartscan-mode)))
+(use-package smartscan)
 
 ;;; save lots of undo history
 ;;; manual: https://www.dr-qubit.org/undo-tree/undo-tree.txt
