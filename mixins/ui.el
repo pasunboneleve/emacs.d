@@ -3,14 +3,17 @@
 ;;; UI goodies.
 ;;; Code:
 
-;;
-;; Re-spawn scratch buffer when killed
-;;
+;; Stop annoying warnings I don't intent to investigate
+(setq warning-minimum-level :error)
 
 ;; Don't duplicate eldoc output in minibuffer if
 ;; I'm using the eldoc-doc-buffer.
 
 (setq eldoc-echo-area-prefer-doc-buffer t)
+
+;;
+;; Re-spawn scratch buffer when killed
+;;
 
 (use-package immortal-scratch
   :init
