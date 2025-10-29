@@ -3,6 +3,8 @@
 ;;; Python configuration
 ;;; Code:
 
+(add-to-list 'major-mode-remap-alist '(python-mode . python-ts-mode))
+
 (use-package poetry
   :ensure-system-package (poetry))
 
@@ -15,7 +17,7 @@
   :after python
   :hook
   (python . python-isort-on-save-mode)
-  (eglot-managed-mode . python-isort-on-save-mode)
+  (python-ts-mode . python-isort-on-save-mode)
   :ensure-system-package (isort . python3-isort))
 
 (use-package ruff-format
@@ -23,7 +25,7 @@
            :type git
            :host github
            :repo "JoshHayes/emacs-ruff-format")
-  :hook (eglot-managed-mode . ruff-format-on-save-mode)
+  :hook (python-ts-mode . ruff-format-on-save-mode)
   :ensure-system-package (ruff))
 
 (use-package flymake-ruff
@@ -37,7 +39,7 @@
   :mode ("\\.py\\'" . python-ts-mode)
   :ensure nil
   :config
-  (add-to-list 'eglot-server-programs '((python-mode . "pyright")))
+  (add-to-list 'eglot-server-programs '((python-ts-mode . "pyright")))
   :hook
   (python . eglot-ensure)
   :ensure-system-package (pyright-langserver . "uv tool install pyright"))
