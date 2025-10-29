@@ -48,7 +48,6 @@
    lsp-restart 'auto-restart
    lsp-enable-folding nil
    lsp-enable-snippet nil)
-  :commands (lsp lsp-deferred)
   :bind-keymap ("s-l" . lsp-command-map)
   :hook (lsp-managed-mode . (lambda ()
                               (add-hook 'before-save-hook 'lsp-format-buffer nil t)
