@@ -142,9 +142,11 @@
 (load-file (concat user-emacs-directory "mixins/languages/haskell-config.el"))
 
 ;; JSON
-(use-package json-mode
+(add-to-list 'major-mode-remap-alist '(json-mode . json-ts-mode))
+(use-package json-ts-mode
+  :ensure nil
   :mode "\\.lock\\|\\.json\\|\\.jshintrc\\'"
-  :interpreter "json-mode"
+  :interpreter "json-ts-mode"
   :custom (js-indent-level 2))
 
 ;; java
