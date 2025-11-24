@@ -206,8 +206,8 @@
   :requires (transient git-commit)
   :pin gnu
   :after transient
-  :hook
-  (git-commit-setup . (lambda () (electric-indent-local-mode -1)))
+  ;; :hook
+  ;; (git-commit-setup . (lambda () (electric-indent-local-mode -1)))
   :config
   ;; status is expensive in big repos, only refresh if
   ;; it is the current buffer

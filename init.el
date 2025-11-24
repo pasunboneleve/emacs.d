@@ -436,7 +436,6 @@
   :hook
   (prog-mode . display-line-numbers-mode) ;; linum-mode, but efficient
   ;; open pairs with extra newline in between, and autoindent
-  (prog-mode . electric-indent-local-mode)
   (prog-mode . electric-pair-local-mode))
 
 ;; Do not use shift-arrow to move between windows
