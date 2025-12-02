@@ -322,6 +322,10 @@
  (aidermacs-backend 'vterm
   aidermacs-default-chat-mode 'architect
   aidermacs-extra-args '("--no-auto-commits"))
+ :config
+ (let ((gemini-key (ignore-errors (secrets-get-secret :secret "gemini-api-key"))))
+   (when gemini-key
+     (add-to-list 'aidermacs-extra-args (format "--gemini-api-key=%s" gemini-key) t)))
  :ensure-system-package
  (
   (cmake)
