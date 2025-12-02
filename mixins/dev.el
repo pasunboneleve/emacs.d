@@ -307,5 +307,27 @@
               emacs-version "-build/emacs-"
               emacs-version "/build-pgtk"))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;;  Artificial Intelligence
+;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(use-package vterm) ;; best Aidermacs backend
+
+(use-package aidermacs
+ :after vterm
+ :bind (("C-c a" . aidermacs-transient-menu))
+ :custom
+ (aidermacs-backend 'vterm
+  aidermacs-default-chat-mode 'architect
+  aidermacs-extra-args '("--no-auto-commits"))
+ :ensure-system-package
+ (
+  (cmake)
+  (libtool)
+  (uv . python-uv)
+  (aider . "uv tool install --force --with-pip aider-chat@latest")))
+
 (provide 'dev)
 ;;; dev.el ends here
