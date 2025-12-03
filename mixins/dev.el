@@ -332,7 +332,9 @@
   :config
   (require 'secrets)
 
-   ;; Define the helper function inside :config so it uses the loaded library
+  ;; This function reads the AI provider API keys from Gnome Keyring. If you
+  ;; are not on Linux it will fail silently and you will need to use the normal
+  ;; aider files or environment variables.
   (defun my/load-aider-keys-from-secrets ()
     "Load all *-api-key items from 'AI' collection into environment variables."
     (interactive)
