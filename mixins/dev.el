@@ -315,38 +315,46 @@
 
 (use-package vterm) ;; best Aidermacs backend
 
-(defun aidermacs-add-ai-provider-key (provider)
-  "Add API key for AI PROVIDER to 'aidermacs-extra-args' if found in keyring."
-  (let ((api-key (ignore-errors (secrets-get-secret :secret "AI" (format "%s-api-key" provider)))))
-    (when api-key
-      (add-to-list 'aidermacs-extra-args (format "--%s-api-key=%s" provider api-key) t))))
-
-(defun aidermacs-add-all-ai-provider-keys ()
-  "Add all AI provider API keys found in the keyring to 'aidermacs-extra-args'."
-  (when (require 'secrets nil t)
-    (let ((ai-collection (secrets-get-collection "AI")))
-      (when ai-collection
-        (dolist (item (secrets-list-items "AI"))
-          (when (string-match "\\(.+\\)-api-key$" item)
-            (let ((provider (match-string 1 item)))
-              (aidermacs-add-ai-provider-key provider))))))))
-
 (use-package aidermacs
- :after vterm
- :bind (("C-c a" . aidermacs-transient-menu))
- :custom
- (aidermacs-backend 'vterm
-  aidermacs-default-chat-mode 'architect
-  aidermacs-extra-args '("--no-auto-commits"))
- :config
- ;; Add all AI provider keys found in the keyring
- (aidermacs-add-all-ai-provider-keys)
- :ensure-system-package
- (
-  (cmake)
-  (libtool)
-  (uv . python-uv)
-  (aider . "uv tool install --force --with-pip aider-chat@latest")))
+  :ensure t
+  :after vterm
+  :bind (("C-c a" . aidermacs-transient-menu))
+  :custom
+  (aidermacs-backend 'vterm)
+  (aidermacs-default-chat-mode 'architect)
+  (aidermacs-extra-args '("--no-auto-commits"))
+
+  :config
+  (require 'secrets)
+
+  ;; Define the helper function inside :config so it uses the loaded library
+  (defun my/load-aider-keys-from-secrets ()
+    "Load all *-api-key items from 'AI' collection into environment variables."
+    (interactive)
+    ;; check if "AI" collection exists
+    (if (member "AI" (secrets-list-collections))
+        (dolist (item (secrets-list-items "AI"))
+          ;; Match items named like "gemini-api-key" or "anthropic-api-key"
+          (when (string-match "^\\(.+\\)-api-key$" item)
+            (let* ((provider (match-string 1 item))
+                   (env-var-name (format "%s_API_KEY" (upcase provider)))
+                   (secret-val (secrets-get-secret "AI" item)))
+
+              ;; Set the environment variable for this emacs process
+              ;; Aider will inherit this automatically.
+              (when secret-val
+                (setenv env-var-name secret-val)
+                (message "Aider: Loaded %s" env-var-name)))))
+      (message "Aider: 'AI' collection not found in keyring.")))
+
+  ;; Run it immediately
+  (my/load-aider-keys-from-secrets)
+
+  :ensure-system-package
+  ((cmake)
+   (libtool)
+   (uv . python-uv)
+   (aider . "uv tool install --force --with-pip aider-chat@latest")))
 
 (provide 'dev)
 ;;; dev.el ends here
