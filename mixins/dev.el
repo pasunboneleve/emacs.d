@@ -315,6 +315,22 @@
 
 (use-package vterm) ;; best Aidermacs backend
 
+(defun aidermacs-add-ai-provider-key (provider)
+  "Add API key for AI PROVIDER to aidermacs-extra-args if found in keyring."
+  (let ((api-key (ignore-errors (secrets-get-secret :secret "AI" (format "%s-api-key" provider)))))
+    (when api-key
+      (add-to-list 'aidermacs-extra-args (format "--%s-api-key=%s" provider api-key) t))))
+
+(defun aidermacs-add-all-ai-provider-keys ()
+  "Add all AI provider API keys found in the keyring to aidermacs-extra-args."
+  (when (require 'secrets nil t)
+    (let ((ai-collection (secrets-get-collection "AI")))
+      (when ai-collection
+        (dolist (item (secrets-list-items "AI"))
+          (when (string-match "\\(.+\\)-api-key$" item)
+            (let ((provider (match-string 1 item)))
+              (aidermacs-add-ai-provider-key provider))))))))
+
 (use-package aidermacs
  :after vterm
  :bind (("C-c a" . aidermacs-transient-menu))
@@ -323,9 +339,8 @@
   aidermacs-default-chat-mode 'architect
   aidermacs-extra-args '("--no-auto-commits"))
  :config
- (let ((gemini-key (ignore-errors (secrets-get-secret :secret "AI" "gemini-api-key"))))
-   (when gemini-key
-     (add-to-list 'aidermacs-extra-args (format "--gemini-api-key=%s" gemini-key) t)))
+ ;; Add all AI provider keys found in the keyring
+ (aidermacs-add-all-ai-provider-keys)
  :ensure-system-package
  (
   (cmake)
