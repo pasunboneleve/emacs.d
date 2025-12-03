@@ -316,13 +316,13 @@
 (use-package vterm) ;; best Aidermacs backend
 
 (defun aidermacs-add-ai-provider-key (provider)
-  "Add API key for AI PROVIDER to aidermacs-extra-args if found in keyring."
+  "Add API key for AI PROVIDER to 'aidermacs-extra-args' if found in keyring."
   (let ((api-key (ignore-errors (secrets-get-secret :secret "AI" (format "%s-api-key" provider)))))
     (when api-key
       (add-to-list 'aidermacs-extra-args (format "--%s-api-key=%s" provider api-key) t))))
 
 (defun aidermacs-add-all-ai-provider-keys ()
-  "Add all AI provider API keys found in the keyring to aidermacs-extra-args."
+  "Add all AI provider API keys found in the keyring to 'aidermacs-extra-args'."
   (when (require 'secrets nil t)
     (let ((ai-collection (secrets-get-collection "AI")))
       (when ai-collection
