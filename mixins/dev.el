@@ -322,12 +322,17 @@
   :custom
   (aidermacs-backend 'vterm)
   (aidermacs-default-chat-mode 'architect)
-  (aidermacs-extra-args '("--no-auto-commits"))
+  (aidermacs-auto-commits nil)
+  (aidermacs-watch-files t)
+  (aidermacs-default-model "anthropic/claude-3-5-sonnet") ; General interactions
+  (aidermacs-architect-model "anthropic/claude-3-5-sonnet") ; High-level planning
+  (aidermacs-editor-model "gemini-2.5-flash") ; Code execution and diff generation
+  (aidermacs-weak-model "gemini-2.5-flash") ; Commit messages, summaries
 
   :config
   (require 'secrets)
 
-  ;; Define the helper function inside :config so it uses the loaded library
+   ;; Define the helper function inside :config so it uses the loaded library
   (defun my/load-aider-keys-from-secrets ()
     "Load all *-api-key items from 'AI' collection into environment variables."
     (interactive)
@@ -347,7 +352,7 @@
                 (message "Aider: Loaded %s" env-var-name)))))
       (message "Aider: 'AI' collection not found in keyring.")))
 
-  ;; Run it immediately
+   ;; Run it immediately
   (my/load-aider-keys-from-secrets)
 
   :ensure-system-package
