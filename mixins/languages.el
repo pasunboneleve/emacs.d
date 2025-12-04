@@ -133,7 +133,13 @@
 
 ;; graphviz
 (use-package graphviz-dot-mode
-  :config (setq graphviz-dot-mode-indent-width 2))
+  :custom
+  (graphviz-dot-mode-indent-width 2)
+  (graphviz-dot-auto-indent-on-semi t)
+  (graphviz-dot-preview-extension "png")
+  :mode ("\\.dot\\'" "\\.gv\\'")
+  :bind (:map graphviz-dot-mode-map
+              ("C-c p" . graphviz-dot-preview)))
 
 ;; handlebars
 (use-package handlebars-mode)
