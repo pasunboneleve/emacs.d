@@ -529,6 +529,9 @@
 ;; Minibuffer & popups
 (load-file (concat user-emacs-directory "mixins/minibuffers.el"))
 
+;; Artificial Intelligence
+(load-file (concat user-emacs-directory "mixins/ai.el"))
+
 ;; Entertainment
 (load-file (concat user-emacs-directory "mixins/entertainment.el"))
 
