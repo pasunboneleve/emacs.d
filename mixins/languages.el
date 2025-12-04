@@ -231,6 +231,16 @@
   :bind (:map markdown-mode-map  ; Bind this key specifically in markdown buffers
               ("C-c m" . markdown-mermaid-preview)))
 
+(use-package mermaid-mode
+  :ensure t
+  :defer t
+  :mode ("\\.mmd\\'" . mermaid-mode) ;; Load for standalone .mmd files
+  :init
+  ;; Crucial: Tell markdown-mode to use mermaid-mode for coloring
+  ;; inside ```mermaid ... ``` blocks.
+  (with-eval-after-load 'markdown-mode
+    (add-to-list 'markdown-code-lang-modes '("mermaid" . mermaid-mode))))
+
 ;; Python
 (load-file (concat user-emacs-directory "mixins/languages/python-config.el"))
 
