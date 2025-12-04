@@ -22,10 +22,16 @@
 ;; 2. Cleanup Function
 (defun markdown-mermaid-cleanup ()
   "Delete all temporary files created by markdown-mermaid."
-  (dolist (file markdown-mermaid-temp-files)
-    (when (file-exists-p file)
-      (delete-file file)))
-  (setq markdown-mermaid-temp-files nil))
+  (interactive) ;; <--- NOW IT IS INTERACTIVE
+  (let ((count 0))
+    (if (not markdown-mermaid-temp-files)
+        (message "No temporary Mermaid files to clean up.")
+      (dolist (file markdown-mermaid-temp-files)
+        (when (file-exists-p file)
+          (delete-file file)
+          (setq count (1+ count))))
+      (setq markdown-mermaid-temp-files nil)
+      (message "Cleaned up %d temporary Mermaid files." count))))
 
 ;; Register the cleanup function to run when Emacs exits
 (add-hook 'kill-emacs-hook #'markdown-mermaid-cleanup)
@@ -78,6 +84,5 @@
       (switch-to-buffer-other-window "*mermaid-error*")
       (message "Compilation failed."))))
 
-;; 3. Provide the feature so Emacs can require it
 (provide 'markdown-mermaid)
 ;;; markdown-mermaid.el ends here.
