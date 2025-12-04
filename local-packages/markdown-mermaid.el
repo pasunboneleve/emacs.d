@@ -1,4 +1,4 @@
-;;; markdown-mermaid.el --- Helper to preview Mermaid inside Markdown using /tmp
+;;; markdown-mermaid.el --- Helper to preview Mermaid inside Markdown using /tmp  -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;;   Extracts mermaid code blocks from markdown, compiles them with mmdc,
 ;;;   and opens the resulting PNG from /tmp.
@@ -7,9 +7,11 @@
 ;;;
 ;;; and then adjust the `markdown-mermaid-mmdc-path'.
 ;;;
+;;;
+;;; Notice that the background and vertice lines of the PNG image will match
+;;; your current Emacs theme.
+;;;
 ;;; Code:
-
-(require 'markdown-mode)
 
 (require 'markdown-mode)
 (require 'json)
