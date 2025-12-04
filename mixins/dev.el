@@ -316,20 +316,45 @@
 (use-package vterm) ;; best Aidermacs backend
 
 (use-package aidermacs
-  :ensure t
   :after vterm
   :bind (("C-c a" . aidermacs-transient-menu))
   :custom
   (aidermacs-backend 'vterm)
-  (aidermacs-default-chat-mode 'architect)
   (aidermacs-auto-commits nil)
   (aidermacs-watch-files t)
-  (aidermacs-default-model "anthropic/claude-3-5-sonnet") ; General interactions
-  (aidermacs-architect-model "anthropic/claude-3-5-sonnet") ; High-level planning
-  (aidermacs-editor-model "gemini-2.5-flash") ; Code execution and diff generation
-  (aidermacs-weak-model "gemini-2.5-flash") ; Commit messages, summaries
+
+  ;; Workflow: Start in "Architect" mode (Plan -> Edit)
+  (aidermacs-default-chat-mode 'architect)
+
+  ;; 1. General Model (Code Mode) - Your daily driver
+  (aidermacs-default-model "deepseek/deepseek-chat")
+
+  ;; 2. Architect Model (The "Brain") - High-level reasoning
+  (aidermacs-architect-model "anthropic/claude-3-5-sonnet-20241022")
+
+  ;; 3. Editor Model (The "Hands") - Applies the Architect's plan
+  ;; Gemini 2.0 Flash is currently the best at diff application speed/cost
+  (aidermacs-editor-model "gemini/gemini-2.0-flash-exp")
+
+  ;; 4. Weak Model (The "Scribe") - Commits & Summaries
+  ;; Keep this as Gemini Flash to keep these interactions free and instant
+  (aidermacs-weak-model "gemini/gemini-2.0-flash-exp")
+
+  ;; Extra args: Only needed for flags not covered by variables
+  (aidermacs-extra-args '("--no-show-model-warnings"))
+
+  :bind (
+         ;; Global binding to open the Transient Menu (The entry point)
+         ("C-c a" . aidermacs-transient-menu)
+         ("C-c a m" . aidermacs-change-model)
+         ;; Local bindings: Only active when aidermacs-minor-mode is on
+         :map aidermacs-minor-mode-map
+         ("C-c A c" . aidermacs-change-model)       ; Quick swap (Architect <-> Code)
+         ("C-c A a" . aidermacs-add-current-buffer) ; Add file to context
+         ("C-c A s" . aidermacs-send-region-or-buffer)) ; Send selection
 
   :config
+  (global-aidermacs-mode t)
   (require 'secrets)
 
   ;; This function reads the AI provider API keys from Gnome Keyring. If you
@@ -364,19 +389,35 @@
    (aider . "uv tool install --force --with-pip aider-chat@latest")))
 
 (use-package gptel
+  :custom
+  (gptel-default-mode 'deepseek)
+  (gptel-stream t)
+  (gptel-max-tokens 4096)
+  (gptel-use-curl nil)
+  (gptel-model 'deepseek-chat)
+  (gptel-backend
+   (cl-find "DeepSeek" gptel-backends :key #'gptel-backend-name :test #'equal))
   :config
   ;; 1. Setup Anthropic (The "Smart" Architect)
   (setq gptel-api-key "") ; Default key
   (gptel-make-anthropic "Claude"
+    :key (ignore-errors (secrets-get-secret "AI" "anthropic-api-key"))
     :stream t
-    :key (ignore-errors (secrets-get-secret "AI" "anthropic-api-key")))
+    :models '("claude-3-5-sonnet-20241022"))
 
   ;; 2. Setup Google Gemini (The "Free" Context Heavyweight)
   (gptel-make-gemini "Gemini"
     :key (ignore-errors (secrets-get-secret "AI" "gemini-api-key"))
     :stream t
-    :models '(gemini-1.5-pro-latest
-              gemini-1.5-flash-latest)))
+    :models '("gemini-1.5-pro-latest"
+              "gemini-1.5-flash-latest"))
+
+  ;; 3. Setup DeepSeek V3 (The "Cheap" reasoner, fast and great for general coding)
+  (gptel-make-openai "DeepSeek"
+   :host "api.deepseek.com"
+   :key (ignore-errors (secrets-get-secret "AI" "deepseek-api-key"))
+   :stream t
+   :models '("deepseek-chat" "deepseek-reasoner")))
 
 (provide 'dev)
 ;;; dev.el ends here
