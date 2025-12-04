@@ -137,6 +137,10 @@
   (graphviz-dot-mode-indent-width 2)
   (graphviz-dot-auto-indent-on-semi t)
   (graphviz-dot-preview-extension "png")
+  :config
+  (with-eval-after-load 'markdown-mode
+   (require 'markdown-mermaid)
+   (define-key markdown-mode-map (kbd "C-c C-c") #'markdown-mermaid-preview))
   :mode ("\\.dot\\'" "\\.gv\\'")
   :bind (:map graphviz-dot-mode-map
               ("C-c p" . graphviz-dot-preview)))
@@ -220,6 +224,12 @@
   :mode "\\.md$\\|\\.markdown\\|\\.udon$"
   :interpreter "markdown-mode"
   :hook flyspell)
+
+(use-package markdown-mermaid
+  :ensure nil                    ; It is a local file, not a package
+  :after markdown-mode           ; Load this only after markdown-mode loads
+  :bind (:map markdown-mode-map  ; Bind this key specifically in markdown buffers
+              ("C-c m" . markdown-mermaid-preview)))
 
 ;; Python
 (load-file (concat user-emacs-directory "mixins/languages/python-config.el"))
