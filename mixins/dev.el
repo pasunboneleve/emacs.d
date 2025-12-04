@@ -363,5 +363,20 @@
    (uv . python-uv)
    (aider . "uv tool install --force --with-pip aider-chat@latest")))
 
+(use-package gptel
+  :config
+  ;; 1. Setup Anthropic (The "Smart" Architect)
+  (setq gptel-api-key "") ; Default key
+  (gptel-make-anthropic "Claude"
+    :stream t
+    :key (ignore-errors (secrets-get-secret "AI" "anthropic-api-key")))
+
+  ;; 2. Setup Google Gemini (The "Free" Context Heavyweight)
+  (gptel-make-gemini "Gemini"
+    :key (ignore-errors (secrets-get-secret "AI" "gemini-api-key"))
+    :stream t
+    :models '(gemini-1.5-pro-latest
+              gemini-1.5-flash-latest)))
+
 (provide 'dev)
 ;;; dev.el ends here
