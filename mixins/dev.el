@@ -317,7 +317,6 @@
 
 (use-package aidermacs
   :after vterm
-  :bind (("C-c a" . aidermacs-transient-menu))
   :custom
   (aidermacs-backend 'vterm)
   (aidermacs-auto-commits nil)
@@ -346,7 +345,6 @@
   :bind (
          ;; Global binding to open the Transient Menu (The entry point)
          ("C-c a" . aidermacs-transient-menu)
-         ("C-c a m" . aidermacs-change-model)
          ;; Local bindings: Only active when aidermacs-minor-mode is on
          :map aidermacs-minor-mode-map
          ("C-c A c" . aidermacs-change-model)       ; Quick swap (Architect <-> Code)
@@ -395,8 +393,6 @@
   (gptel-max-tokens 4096)
   (gptel-use-curl nil)
   (gptel-model 'deepseek-chat)
-  (gptel-backend
-   (cl-find "DeepSeek" gptel-backends :key #'gptel-backend-name :test #'equal))
   :config
   ;; 1. Setup Anthropic (The "Smart" Architect)
   (setq gptel-api-key "") ; Default key
