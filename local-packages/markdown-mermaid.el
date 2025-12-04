@@ -11,12 +11,26 @@
 
 (require 'markdown-mode)
 
-;; 1. Define the path variable (Easy to change later)
+;; 1. Configuration Variables
 (defvar markdown-mermaid-mmdc-path
   (expand-file-name "~/.nvm/versions/node/v23.11.0/bin/mmdc")
   "Path to the mermaid-cli executable (mmdc).")
 
-;; 2. The Main Function
+(defvar markdown-mermaid-temp-files nil
+  "List of temporary files created during the session.")
+
+;; 2. Cleanup Function
+(defun markdown-mermaid-cleanup ()
+  "Delete all temporary files created by markdown-mermaid."
+  (dolist (file markdown-mermaid-temp-files)
+    (when (file-exists-p file)
+      (delete-file file)))
+  (setq markdown-mermaid-temp-files nil))
+
+;; Register the cleanup function to run when Emacs exits
+(add-hook 'kill-emacs-hook #'markdown-mermaid-cleanup)
+
+;; 3. The Main Function
 ;;;###autoload
 (defun markdown-mermaid-preview ()
   "Find the current mermaid block, save to /tmp, compile, and preview."
@@ -25,26 +39,28 @@
         (temp-output (make-temp-file "mermaid-block-" nil ".png"))
         start end mermaid-code)
 
+    ;; Add files to the tracking list so they get deleted later
+    (add-to-list 'markdown-mermaid-temp-files temp-input)
+    (add-to-list 'markdown-mermaid-temp-files temp-output)
+
     ;; A. Find the bounds of the code block
     (save-excursion
       (let ((case-fold-search t))
-        ;; Search backward for the opening fence ```mermaid
         (if (re-search-backward "^[ \t]*```[ \t]*mermaid" nil t)
             (progn
-              (forward-line 1) ;; Move inside the block
+              (forward-line 1)
               (setq start (point))
-              ;; Search forward for the closing fence ```
               (if (re-search-forward "^[ \t]*```" nil t)
                   (setq end (match-beginning 0))
                 (error "Found start of block, but not the end")))
           (error "Cursor is not inside a ```mermaid block"))))
 
-    ;; B. Extract the code and write to temp file
+    ;; B. Extract code
     (setq mermaid-code (buffer-substring-no-properties start end))
     (with-temp-file temp-input
       (insert mermaid-code))
 
-    ;; C. Compile using mmdc
+    ;; C. Compile
     (message "Compiling Mermaid block...")
     (call-process markdown-mermaid-mmdc-path
                   nil
@@ -54,7 +70,7 @@
                   "-o" temp-output
                   "-b" "transparent")
 
-    ;; D. Display the result
+    ;; D. Display
     (if (file-exists-p temp-output)
         (progn
           (message "Preview generated: %s" temp-output)
