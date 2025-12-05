@@ -99,7 +99,7 @@
   (gptel-make-anthropic "Claude"
     :key (ignore-errors (secrets-get-secret "AI" "anthropic-api-key"))
     :stream t
-    :models '("claude-3-5-sonnet-20241022"))
+    :models '("claude-3-5-sonnet-latest"))
 
   ;;;; 2. Setup Google Gemini (The "Free" Context Heavyweight)
   (gptel-make-gemini "Gemini"
