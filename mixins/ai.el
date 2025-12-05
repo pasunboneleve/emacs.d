@@ -59,7 +59,7 @@
   (aidermacs-backend 'vterm)
   (aidermacs-auto-commits nil)
   (aidermacs-watch-files t)
-
+  (aidermacs-extra-args '("--theme" "default" "--no-show-model-warnings"))
   ;; Workflow: Start in "Architect" mode (Plan -> Edit)
   (aidermacs-default-chat-mode 'architect)
 
@@ -69,15 +69,15 @@
   ;; 2. Architect Model (The "Brain") - High-level reasoning
   (aidermacs-architect-model "anthropic/claude-sonnet-4-5-20250929")
 
-  ;; 3. Editor Model (The "Hands") - Applies the Architect's plan
-  ;; Gemini 2.0 Flash is currently the best at diff application speed/cost
+   ;; 3. Editor Model (The "Hands") - Applies the Architect's plan
+   ;; Gemini 2.0 Flash is currently the best at diff application speed/cost
   (aidermacs-editor-model "gemini/gemini-2.0-flash")
 
-  ;; 4. Weak Model (The "Scribe") - Commits & Summaries
-  ;; Keep this as Gemini Flash to keep these interactions free and instant
+   ;; 4. Weak Model (The "Scribe") - Commits & Summaries
+   ;; Keep this as Gemini Flash to keep these interactions free and instant
   (aidermacs-weak-model "gemini/gemini-2.0-flash")
 
-  ;; Extra args: Only needed for flags not covered by variables
+   ;; Extra args: Only needed for flags not covered by variables
   (aidermacs-extra-args '("--no-show-model-warnings"))
 
   :bind (
