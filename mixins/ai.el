@@ -13,6 +13,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (require 'url)
+(require 'secrets)
 
 (use-package vterm ;; best Aidermacs backend
   :ensure t
@@ -90,7 +91,8 @@
          ("C-c A s" . aidermacs-send-region-or-buffer)) ; Send selection
 
   :config
-  (require 'secrets)
+  ;; Force the base model environment variable
+  (setenv "AIDER_MODEL" "deepseek/deepseek-chat")
 
   ;; This function reads the AI provider API keys from Gnome Keyring. If you
   ;; are not on Linux it will fail silently and you will need to use the normal
