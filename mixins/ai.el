@@ -92,6 +92,7 @@
   (gptel-stream t)                   ; Stream responses by default
   (gptel-max-tokens 4096)            ; Max token limit
   (gptel-default-mode 'org-mode)     ; Format responses as Org
+  (gptel-use-header-line t)          ; shows status bar at the top while streaming
   :config
   ;; 2. Setup Logic (Must be in :config because we are calling functions)
 
