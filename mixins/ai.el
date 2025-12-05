@@ -90,7 +90,7 @@
   ;; 1. Static Settings (Safe in :custom)
   (gptel-model 'deepseek-chat)       ; The default model name
   (gptel-stream t)                   ; Stream responses by default
-  (gptel-max-tokens 4096)            ; Max token limit
+  (gptel-max-tokens 8192)            ; Max token limit
   (gptel-default-mode 'org-mode)     ; Format responses as Org
   (gptel-use-header-line t)          ; shows status bar at the top while streaming
   :config
