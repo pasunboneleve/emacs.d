@@ -117,7 +117,13 @@
     :key (ignore-errors (secrets-get-secret "AI" "deepseek-api-key"))
     :stream t
     :models '("deepseek-chat" "deepseek-reasoner")))
-
+  (add-to-list 'gptel-directives
+               '(analyst . "You are an expert Product Analyst and Marketing Strategist.
+1. Analyze the project idea for market viability, target audience, and competitive landscape.
+2. Define a Monetization Strategy (Freemium, Subscriptions, One-time).
+3. Create a Go-to-Market strategy (Launch plan, Marketing channels).
+4. Identify User Personas (Who are we building this for?).
+5. Output in Org-mode. Be critical and realistic."))
   (add-to-list 'gptel-directives
                '(architect . "You are an expert Software Architect.
 1. Read the Context and Requirements provided.
