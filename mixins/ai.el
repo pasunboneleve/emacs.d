@@ -51,7 +51,6 @@
          ("C-c A s" . aidermacs-send-region-or-buffer)) ; Send selection
 
   :config
-  (global-aidermacs-mode t)
   (require 'secrets)
 
   ;; This function reads the AI provider API keys from Gnome Keyring. If you
