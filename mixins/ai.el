@@ -12,6 +12,7 @@
 ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(require 'url)
 (use-package vterm) ;; best Aidermacs backend
 
 (use-package aidermacs
@@ -127,6 +128,62 @@
                         (buffer-string))))
     (setq gptel-system-message persona-text)
     (message "Gptel acts as: %s" (file-name-base persona-file))))
+
+(defvar my/bmad-prompts-dir (expand-file-name "~/.config/emacs/bmad-prompts/")
+  "Directory to store BMAD agent prompts.")
+
+;; A list of (Agent-Name . Raw-GitHub-URL)
+;; You can add/remove agents here as the repo evolves.
+(defvar my/bmad-agent-sources
+  '(("Architect" . "https://raw.githubusercontent.com/bmad-code-org/BMAD-METHOD/main/src/modules/bmm/agents/architect.md")
+    ("ProductManager" . "https://raw.githubusercontent.com/bmad-code-org/BMAD-METHOD/main/src/modules/bmm/agents/product-manager.md")
+    ("Developer" . "https://raw.githubusercontent.com/bmad-code-org/BMAD-METHOD/main/src/modules/bmm/agents/developer.md")
+    ("Analyst" . "https://raw.githubusercontent.com/bmad-code-org/BMAD-METHOD/main/src/modules/bmm/agents/analyst.md")))
+
+(defun my/bmad-fetch-prompts ()
+  "Download BMAD agent prompts from GitHub to my/bmad-prompts-dir."
+  (interactive)
+  (unless (file-exists-p my/bmad-prompts-dir)
+    (make-directory my/bmad-prompts-dir t))
+
+  (dolist (agent my/bmad-agent-sources)
+    (let* ((name (car agent))
+           (url (cdr agent))
+           (target-file (expand-file-name (concat name ".md") my/bmad-prompts-dir)))
+      (message "Fetching BMAD Agent: %s..." name)
+      (with-current-buffer (url-retrieve-synchronously url)
+        (goto-char (point-min))
+        ;; Skip HTTP headers
+        (re-search-forward "\n\n")
+        (let ((content (buffer-substring (point) (point-max))))
+          (with-temp-file target-file
+            (insert content)))
+        (kill-buffer))))
+  (message "BMAD Prompts saved to %s" my/bmad-prompts-dir))
+
+(defun my/gptel-set-bmad-persona ()
+  "Read a BMAD prompt file and set it as the system message for the current buffer."
+  (interactive)
+  ;; 1. Ensure prompts exist; fetch if missing
+  (unless (file-exists-p my/bmad-prompts-dir)
+    (if (y-or-n-p "BMAD prompts not found. Fetch them now?")
+        (my/bmad-fetch-prompts)
+      (error "Prompts missing.")))
+
+  ;; 2. Select Agent
+  (let* ((files (directory-files my/bmad-prompts-dir nil "\\.md$"))
+         (selected-agent (completing-read "Select BMAD Agent: " files nil t))
+         (full-path (expand-file-name selected-agent my/bmad-prompts-dir))
+         (prompt-content (with-temp-buffer
+                           (insert-file-contents full-path)
+                           (buffer-string))))
+
+    ;; 3. Set GPTel System Prompt
+    (setq-local gptel-system-message prompt-content)
+    (message "Gptel is now running as: %s" (file-name-base selected-agent))))
+
+;; Bind this to a convenient key
+(global-set-key (kbd "C-c B p") 'my/gptel-set-bmad-persona)
 
 (provide 'ai)
 ;;; ai.el ends here
