@@ -87,32 +87,34 @@
 
 (use-package gptel
   :custom
-  (gptel-default-mode 'deepseek)
-  (gptel-stream t)
-  (gptel-max-tokens 4096)
-  (gptel-use-curl nil)
-  (gptel-model 'deepseek-chat)
+  ;; 1. Static Settings (Safe in :custom)
+  (gptel-model 'deepseek-chat)       ; The default model name
+  (gptel-stream t)                   ; Stream responses by default
+  (gptel-max-tokens 4096)            ; Max token limit
+  (gptel-default-mode 'org-mode)     ; Format responses as Org
   :config
-  ;; 1. Setup Anthropic (The "Smart" Architect)
-  (setq gptel-api-key "") ; Default key
+  ;; 2. Setup Logic (Must be in :config because we are calling functions)
+
+  ;;;; 1. Setup Anthropic (The "Smart" Architect)
   (gptel-make-anthropic "Claude"
     :key (ignore-errors (secrets-get-secret "AI" "anthropic-api-key"))
     :stream t
     :models '("claude-3-5-sonnet-20241022"))
 
-  ;; 2. Setup Google Gemini (The "Free" Context Heavyweight)
+  ;;;; 2. Setup Google Gemini (The "Free" Context Heavyweight)
   (gptel-make-gemini "Gemini"
     :key (ignore-errors (secrets-get-secret "AI" "gemini-api-key"))
     :stream t
     :models '("gemini-1.5-pro-latest"
               "gemini-1.5-flash-latest"))
 
-  ;; 3. Setup DeepSeek V3 (The "Cheap" reasoner, fast and great for general coding)
-  (gptel-make-openai "DeepSeek"
-   :host "api.deepseek.com"
-   :key (ignore-errors (secrets-get-secret "AI" "deepseek-api-key"))
-   :stream t
-   :models '("deepseek-chat" "deepseek-reasoner")))
+  ;;;; 3. Setup DeepSeek V3 (The "Cheap" reasoner, fast and great for general coding)
+  (setq gptel-backend
+   (gptel-make-openai "DeepSeek"
+    :host "api.deepseek.com"
+    :key (ignore-errors (secrets-get-secret "AI" "deepseek-api-key"))
+    :stream t
+    :models '("deepseek-chat" "deepseek-reasoner"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
