@@ -145,6 +145,12 @@
   :bind (:map graphviz-dot-mode-map
               ("C-c p" . graphviz-dot-preview)))
 
+;; mermaid
+(use-package markdown-mermaid
+  :ensure (markdown-mermaid :type git :host github :repo "pasunboneleve/markdown-mermaid")
+  :bind (:map markdown-mode-map
+              ("C-c m" . markdown-mermaid-preview)))
+
 ;; handlebars
 (use-package handlebars-mode)
 
