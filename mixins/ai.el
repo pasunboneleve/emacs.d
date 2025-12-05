@@ -114,7 +114,21 @@
     :host "api.deepseek.com"
     :key (ignore-errors (secrets-get-secret "AI" "deepseek-api-key"))
     :stream t
-    :models '("deepseek-chat" "deepseek-reasoner"))))
+    :models '("deepseek-chat" "deepseek-reasoner")))
+
+  (add-to-list 'gptel-directives
+               '(architect . "You are an expert Software Architect.
+1. Read the Context and Requirements provided.
+2. Fill in \"Section 3: Architecture\" with the tech stack, file structure, and data models.
+3. Fill in \"Section 4: Implementation Plan\" with a step-by-step checklist for the developer.
+4. Use Org-mode formatting. Do not repeat the Context/Requirements."))
+
+  (add-to-list 'gptel-directives
+               '(developer . "You are an expert Full Stack Developer.
+1. Read the Architecture and Implementation Plan.
+2. Write the code for the requested feature.
+3. Ensure code is clean, commented, and follows best practices.
+4. Wrap code in Org-mode source blocks.")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
