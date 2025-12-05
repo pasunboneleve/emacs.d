@@ -29,7 +29,7 @@
   (aidermacs-default-model "deepseek/deepseek-chat")
 
   ;; 2. Architect Model (The "Brain") - High-level reasoning
-  (aidermacs-architect-model "anthropic/claude-3-5-sonnet-20241022")
+  (aidermacs-architect-model "anthropic/claude-4-5-sonnet-20250929")
 
   ;; 3. Editor Model (The "Hands") - Applies the Architect's plan
   ;; Gemini 2.0 Flash is currently the best at diff application speed/cost
@@ -99,7 +99,9 @@
   (gptel-make-anthropic "Claude"
     :key (ignore-errors (secrets-get-secret "AI" "anthropic-api-key"))
     :stream t
-    :models '("claude-3-5-sonnet-latest"))
+    :models '("claude-sonnet-4-5-20250929"  ; <--- Your New "Architect" (Fast/Smart)
+              "claude-opus-4-5-20251101"    ; <--- The "Heavyweight" (Slow/Genius)
+              "claude-sonnet-4-20250514"))  ; <--- The Backup
 
   ;;;; 2. Setup Google Gemini (The "Free" Context Heavyweight)
   (gptel-make-gemini "Gemini"
