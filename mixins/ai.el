@@ -13,7 +13,45 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (require 'url)
-(use-package vterm) ;; best Aidermacs backend
+
+(use-package vterm ;; best Aidermacs backend
+  :ensure t
+  :config
+  (defun my/sync-vterm-colors-with-theme ()
+    "Set vterm-color-settings based on the current theme's ansi-color-names-vector."
+    (interactive)
+    (when (boundp 'ansi-color-names-vector)
+      (let ((colors ansi-color-names-vector))
+        (setq vterm-color-settings
+              (list
+               ;; Normal Colors (0-7)
+               (list :num 0 :val (aref colors 0)) ;; Black
+               (list :num 1 :val (aref colors 1)) ;; Red
+               (list :num 2 :val (aref colors 2)) ;; Green
+               (list :num 3 :val (aref colors 3)) ;; Yellow
+               (list :num 4 :val (aref colors 4)) ;; Blue
+               (list :num 5 :val (aref colors 5)) ;; Magenta
+               (list :num 6 :val (aref colors 6)) ;; Cyan
+               (list :num 7 :val (aref colors 7)) ;; White
+
+               ;; Bright Colors (8-15)
+               ;; We map these to the same vector because Solarized
+               ;; typically handles 'bright' via bolding rather than different hues.
+               (list :num 8  :val (aref colors 0))
+               (list :num 9  :val (aref colors 1))
+               (list :num 10 :val (aref colors 2))
+               (list :num 11 :val (aref colors 3))
+               (list :num 12 :val (aref colors 4))
+               (list :num 13 :val (aref colors 5))
+               (list :num 14 :val (aref colors 6))
+               (list :num 15 :val (aref colors 7)))))))
+
+  ;; 1. Run immediately on startup
+  (my/sync-vterm-colors-with-theme)
+
+  ;; 2. Run whenever a theme is loaded (Dynamic Support)
+  ;; Note: This ensures if you M-x load-theme, vterm settings update.
+  (add-hook 'enable-theme-functions #'my/sync-vterm-colors-with-theme))
 
 (use-package aidermacs
   :after vterm
