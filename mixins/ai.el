@@ -33,11 +33,11 @@
 
   ;; 3. Editor Model (The "Hands") - Applies the Architect's plan
   ;; Gemini 2.0 Flash is currently the best at diff application speed/cost
-  (aidermacs-editor-model "gemini/gemini-2.0-flash-exp")
+  (aidermacs-editor-model "gemini/gemini-2.0-flash")
 
   ;; 4. Weak Model (The "Scribe") - Commits & Summaries
   ;; Keep this as Gemini Flash to keep these interactions free and instant
-  (aidermacs-weak-model "gemini/gemini-2.0-flash-exp")
+  (aidermacs-weak-model "gemini/gemini-2.0-flash")
 
   ;; Extra args: Only needed for flags not covered by variables
   (aidermacs-extra-args '("--no-show-model-warnings"))
@@ -108,8 +108,9 @@
   (gptel-make-gemini "Gemini"
     :key (ignore-errors (secrets-get-secret "AI" "gemini-api-key"))
     :stream t
-    :models '("gemini-1.5-pro-latest"
-              "gemini-1.5-flash-latest"))
+    :models '("gemini-2.0-flash"     ; <--- Stable 2.0
+              "gemini-1.5-flash"     ; <--- The Ultimate Backup (Always Free/Fast)
+              "gemini-2.0-pro"))     ; <--- If you have paid credits
 
   ;;;; 3. Setup DeepSeek V3 (The "Cheap" reasoner, fast and great for general coding)
   (setq gptel-backend
