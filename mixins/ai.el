@@ -166,9 +166,9 @@
   (interactive)
   ;; 1. Ensure prompts exist; fetch if missing
   (unless (file-exists-p my/bmad-prompts-dir)
-    (if (y-or-n-p "BMAD prompts not found. Fetch them now?")
+    (if (y-or-n-p "BMAD prompts not found.  Fetch them now?")
         (my/bmad-fetch-prompts)
-      (error "Prompts missing.")))
+      (error "Prompts missing")))
 
   ;; 2. Select Agent
   (let* ((files (directory-files my/bmad-prompts-dir nil "\\.md$"))
