@@ -24,17 +24,18 @@
    '((sequence "TODO" "IN-PROGRESS" "WONT-DO" "DONE")))
   (org-tag-alist '(("@work" . ?w) ("@emacs" . ?e) ("urbit" . ?u)))
   :init
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((emacs-lisp . t)
-     (shell . t)
-     (python . t)))
-  :bind
-  (:map org-mode-map
-        ("C-c l" . org-store-link)
-        ("C-c a" . org-agenda)
-        ("C-c c" . org-capture))
-  :config (define-key org-mode-map (kbd "C-c C-r") verb-command-map))
+ (add-to-list 'Info-directory-list "~/.config/emacs/elpaca/repos/org-mode/doc")
+ (org-babel-do-load-languages
+  'org-babel-load-languages
+  '((emacs-lisp . t)
+    (shell . t)
+    (python . t)))
+ :bind
+ (:map org-mode-map
+       ("C-c l" . org-store-link)
+       ("C-c a" . org-agenda)
+       ("C-c c" . org-capture))
+ :config (define-key org-mode-map (kbd "C-c C-r") verb-command-map))
 
 (use-package org-pandoc-import
   :after org
