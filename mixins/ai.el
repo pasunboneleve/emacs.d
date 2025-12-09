@@ -60,7 +60,7 @@
   (aidermacs-backend 'vterm)
   (aidermacs-auto-commits nil)
   (aidermacs-watch-files t)
-  (aidermacs-extra-args '("--theme" "default" "--no-show-model-warnings"))
+  (aidermacs-extra-args '("--dark-mode"))
   ;; Workflow: Start in "Architect" mode (Plan -> Edit)
   (aidermacs-default-chat-mode 'architect)
 
@@ -78,9 +78,6 @@
    ;; Keep this as Gemini Flash to keep these interactions free and instant
   (aidermacs-weak-model "gemini/gemini-2.0-flash")
 
-   ;; Extra args: Only needed for flags not covered by variables
-  (aidermacs-extra-args '("--no-show-model-warnings"))
-
   :bind (
          ;; Global binding to open the Transient Menu (The entry point)
          ("C-c a" . aidermacs-transient-menu)
@@ -92,8 +89,6 @@
 
   :config
   ;; Force the base model environment variable
-  (setenv "AIDER_MODEL" "deepseek/deepseek-chat")
-
   ;; This function reads the AI provider API keys from Gnome Keyring. If you
   ;; are not on Linux it will fail silently and you will need to use the normal
   ;; aider files or environment variables.
