@@ -307,5 +307,8 @@
               emacs-version "-build/emacs-"
               emacs-version "/build-pgtk"))
 
+;;; Lint emacs packages
+(use-package package-lint)
+
 (provide 'dev)
 ;;; dev.el ends here
