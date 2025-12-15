@@ -68,7 +68,8 @@
   (aidermacs-default-model "deepseek/deepseek-chat")
 
   ;; 2. Architect Model (The "Brain") - High-level reasoning
-  (aidermacs-architect-model "anthropic/claude-sonnet-4-5-20250929")
+  ;; (aidermacs-architect-model "anthropic/claude-sonnet-4-5-20250929")
+  (aidermacs-architect-model "gemini/gemini-2.0-flash")
 
    ;; 3. Editor Model (The "Hands") - Applies the Architect's plan
    ;; Gemini 2.0 Flash is currently the best at diff application speed/cost
