@@ -26,12 +26,12 @@
   '("protocol" "namespace") ;; reserved words
   '(("\\<[[:alnum:]_]+\\>" (0 font-lock-builtin-face) ("\\<[[:alnum:]_]+\\>;?\\( {\\)?" nil nil (0 nil))) ;; type
     ("\\<\\(?:namespace\\|protocol\\)\\>" . font-lock-keyword-face)
-    
+
     ("{\\|}\\|;\\|<\\|>" . font-lock-constant-face)) ;; separators
   '("\\.avdl$") ;; file extension
   nil
-  "Major mode for editing Avro IDL files."
-  )
+  "Major mode for editing Avro IDL files.")
+
 
 (provide 'avro-mode)
 
