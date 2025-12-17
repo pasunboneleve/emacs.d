@@ -21,7 +21,7 @@
 (define-generic-mode
     'technique-mode
   nil ;; comments
-  '("repeat") ;; reserved words
+  '("repeat" "exec") ;; reserved words
   '(
     ("^% technique .*" . font-lock-preprocessor-face) ;; version
     ("^\\(!\\|&\\)\s.*" . font-lock-preprocessor-face) ;; copyright
