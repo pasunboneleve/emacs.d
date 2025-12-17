@@ -4,9 +4,8 @@
 !early-init.el
 !init.el
 !mixins/
-!mixins/**
-mixins/*.elc
-mixins/languages/*.elc
-mixins/minibuffers/*.elc
+!mixins/**/*.el
+!local-packages/
+!local-packages/**/*.el
 **/#*#
 !**/*.gpg
