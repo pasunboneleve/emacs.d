@@ -107,6 +107,12 @@
   (tab-width 4)
   :mode "\\.avdl$")
 
+(use-package technique-mode
+  :ensure nil
+  :custom
+  (tab-width 4)
+  :mode "\\.tq$")
+
 ;; ini files
 (use-package conf-mode
   :ensure nil
