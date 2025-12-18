@@ -393,6 +393,8 @@
 ;;; SQL
 (load-file (concat user-emacs-directory "mixins/languages/sql-config.el"))
 
+;;; vim
+(use-package vimrc-mode)
 
 (provide 'languages)
 ;;; languages.el ends here.
