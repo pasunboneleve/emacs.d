@@ -23,16 +23,35 @@
   nil ;; comments
   '("repeat" "exec") ;; reserved words
   '(
-    ("^% technique .*" . font-lock-preprocessor-face) ;; version
-    ("^\\(!\\|&\\)\s.*" . font-lock-preprocessor-face) ;; copyright
-    ("^# [[:alnum:] _]+" . font-lock-doc-markup-face) ;; procedure
-    ("^[[:alnum:] _\\(\\)]+\\\s:\s.*" . font-lock-type-face) ;; functions
+    ;; The following regex matches standard double-quoted strings.
+    ;; The (0 'default t) applies the default face to the entire match,
+    ;; overriding any prior string highlighting rules.
+    ("\"[^\"]*\"" 0 'default t)
+
+    ;; header metadata
+    ("^\s*%.*$" . font-lock-warning-face)              ;; header
+    ("^\s*!.*$" . font-lock-warning-face)              ;; SPDX
+    ("^\s*&.*$" . font-lock-warning-face)              ;; template
+
+    ;; titles
+    ("^\s*#" . font-lock-comment-face)                 ;; title marker
+    ("^\s*#\\(.*\\)$" . (1 font-lock-warning-face))    ;; title
+
+    ;; sections
+    ("^\s*[IVX]+." . font-lock-comment-face)           ;; uppercase roman numerals
+
+    ;; steps
+    ("^\s*\d+.\s" . font-lock-comment-face)            ;; number
+    ("^\s*[a-hj-uw-z].\s" . font-lock-comment-face)    ;; substep letter
+    ("^\s*[ivx]+.\s" . font-lock-comment-face)         ;; subsubstep roman
+    ("^\s*-\s" . font-lock-warning-face)               ;; parallel step
+    ("^[[:alnum:] _\\(\\)]+\\\s:\s.*" . font-lock-type-face) ;; procedure
     ("^\s*\\([[:alnum:]]+\\)\\.\s\\{1,2\\}" . font-lock-comment-face) ;; lists
     ("{\\|}\\|;\\|<\\|>\\|\\[\\|\\]\\||" . font-lock-comment-face) ;; separators
     ("=\\|~" . font-lock-keyword-face) ;; operators
     ("```[[:alnum:]]*\\|'[[:alnum:]]+'" . font-lock-preprocessor-face) ;;; code
-    ("\\(\\^\\|\\@\\)[[:alnum:]_]+" . font-lock-constant-face)) ;; named actor
-  '("\\.tq$") ;; file extension
+    ("\\(\\^\\|\\@\\)[[:alnum:]_\\*]+" . font-lock-constant-face)) ;; named actor
+  '("\\.tq$") ;; file extensions
   nil
   "Major mode for editing Technique Procedure Language files.")
 
