@@ -18,23 +18,57 @@
 
 (require 'generic-x)
 
-(define-generic-mode
-    'technique-mode
-  nil ;; comments
-  '("repeat" "exec") ;; reserved words
-  '(
-    ("^% technique .*" . font-lock-preprocessor-face) ;; version
-    ("^\\(!\\|&\\)\s.*" . font-lock-preprocessor-face) ;; copyright
-    ("^# [[:alnum:] _]+" . font-lock-doc-markup-face) ;; procedure
-    ("^[[:alnum:] _\\(\\)]+\\\s:\s.*" . font-lock-type-face) ;; functions
-    ("^\s*\\([[:alnum:]]+\\)\\.\s\\{1,2\\}" . font-lock-comment-face) ;; lists
-    ("{\\|}\\|;\\|<\\|>\\|\\[\\|\\]\\||" . font-lock-comment-face) ;; separators
-    ("=\\|~" . font-lock-keyword-face) ;; operators
-    ("```[[:alnum:]]*\\|'[[:alnum:]]+'" . font-lock-preprocessor-face) ;;; code
-    ("\\(\\^\\|\\@\\)[[:alnum:]_]+" . font-lock-constant-face)) ;; named actor
-  '("\\.tq$") ;; file extension
-  nil
-  "Major mode for editing Technique Procedure Language files.")
+
+(let* ((technique-procedure-regex
+           "^\s*\\([[:alpha:]][[:alnum:]_]*\\)\s*\\((\\([[:alpha:][:alnum:]]*\\))\\)?\s*:\s*")
+       (technique-genus-regex (concat technique-procedure-regex "\\(.+\\)")))
+
+ (eval
+  `(define-generic-mode 'technique-mode
+     nil ;; comments
+    '("repeat" "contained") ;; keywords
+    '(
+   ;; The following regex matches standard double-quoted strings.
+   ;; The (0 'default t) applies the default face to the entire match,
+   ;; overriding any prior string highlighting rules.
+      ("\"[^\"]*\"" 0 'default t)
+
+   ;; header metadata
+      ("^\s*%.*$" . font-lock-warning-face)              ;; header
+      ("^\s*!.*$" . font-lock-warning-face)              ;; SPDX
+      ("^\s*&.*$" . font-lock-warning-face)              ;; template
+
+   ;; titles
+      ("^\s*#" . font-lock-comment-face)                 ;; title marker
+      ("^\s*#\\(.*\\)$" . (1 font-lock-warning-face))    ;; title
+
+   ;; sections
+      ("^\s*[IVX]+." . font-lock-comment-face)           ;; uppercase roman numerals
+
+   ;; steps
+      ("^\s*\d+.\s" . font-lock-comment-face)            ;; number
+      ("^\s*[a-hj-uw-z].\s" . font-lock-comment-face)    ;; substep letter
+      ("^\s*[ivx]+.\s" . font-lock-comment-face)         ;; subsubstep roman
+      ("^\s*-\s" . font-lock-warning-face)               ;; parallel step
+
+   ;; procedure declarations
+      (,technique-procedure-regex
+       . (1 font-lock-doc-markup-face))                  ;; name
+      (,technique-procedure-regex
+       . (3 font-lock-variable-name-face))               ;; parameter
+      (,technique-genus-regex
+       . (4 font-lock-type-face))                        ;; genus
+
+    ;; other
+      ("^\s*\\([[:alnum:]]+\\)\\.\s\\{1,2\\}" . font-lock-comment-face) ;; lists
+      ("{\\|}\\|;\\|<\\|>\\|\\[\\|\\]\\||" . font-lock-comment-face) ;; separators
+      ("=\\|~" . font-lock-keyword-face) ;; operators
+      ("```[[:alnum:]]*\\|'[[:alnum:]]+'" . font-lock-preprocessor-face) ;;; code
+      nil)
+
+    '("\\.tq$") ;; file extension
+    nil
+    "Major mode for editing Technique Procedure Language files.")))
 
 
 (provide 'technique-mode)
