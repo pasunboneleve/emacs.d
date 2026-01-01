@@ -65,19 +65,19 @@
   (aidermacs-default-chat-mode 'architect)
 
   ;; 1. General Model (Code Mode) - Your daily driver
-  (aidermacs-default-model "gemini")
+  (aidermacs-default-model "xai/grok-code-fast-1")
 
   ;; 2. Architect Model (The "Brain") - High-level reasoning
   ;; (aidermacs-architect-model "anthropic/claude-sonnet-4-5-20250929")
-  (aidermacs-architect-model "gemini")
+  (aidermacs-architect-model "xai/grok-4-1-fast-reasoning")
 
    ;; 3. Editor Model (The "Hands") - Applies the Architect's plan
    ;; Gemini 2.0 Flash is currently the best at diff application speed/cost
-  (aidermacs-editor-model "flash")
+  (aidermacs-editor-model "xai/grok-4-fast-non-reasoning")
 
    ;; 4. Weak Model (The "Scribe") - Commits & Summaries
    ;; Keep this as Gemini Flash to keep these interactions free and instant
-  (aidermacs-weak-model "flash-lite")
+  (aidermacs-weak-model "xai/grok-4-1-fast-non-reasoning")
 
   :bind (
          ;; Global binding to open the Transient Menu (The entry point)
@@ -124,13 +124,22 @@
 (use-package gptel
   :custom
   ;; 1. Static Settings (Safe in :custom)
-  (gptel-model 'deepseek-chat)       ; The default model name
-  (gptel-stream t)                   ; Stream responses by default
-  (gptel-max-tokens 8192)            ; Max token limit
-  (gptel-default-mode 'org-mode)     ; Format responses as Org
-  (gptel-use-header-line t)          ; shows status bar at the top while streaming
+  (gptel-model 'grok-4-1-fast-reasoning)  ; The default model name
+  (gptel-stream t)                        ; Stream responses by default
+  (gptel-max-tokens 8192)                 ; Max token limit
+  (gptel-default-mode 'org-mode)          ; Format responses as Org
+  (gptel-use-header-line t)               ; shows status bar at the top while streaming
   :config
-  ;; 2. Setup Logic (Must be in :config because we are calling functions)
+  ;; 2. Setup Logic (Must be in :config because we're calling functions)
+
+  ;;;; 0. Setup xAI (The default in 2026)
+
+  (gptel-make-xai "xAI"
+    :key (ignore-errors (secrets-get-secret "AI" "xai-api-key"))
+         :stream t
+         :models '("grok-4-1-fast-reasoning"        ; <--- Your New "Architect" (Smart)
+                   "grok-code-fast-1"               ; <--- The fast coder
+                   "grok-4-1-fast-non-reasoning")) ; <--- The really fast, no reasoning
 
   ;;;; 1. Setup Anthropic (The "Smart" Architect)
   (gptel-make-anthropic "Claude"
@@ -149,12 +158,14 @@
               "gemini-2.0-pro"))     ; <--- If you have paid credits
 
   ;;;; 3. Setup DeepSeek V3 (The "Cheap" reasoner, fast and great for general coding)
-  (setq gptel-backend
-   (gptel-make-openai "DeepSeek"
-    :host "api.deepseek.com"
-    :key (ignore-errors (secrets-get-secret "AI" "deepseek-api-key"))
-    :stream t
-    :models '("deepseek-chat" "deepseek-reasoner")))
+  (gptel-make-openai "DeepSeek"
+      :host "api.deepseek.com"
+      :key (ignore-errors (secrets-get-secret "AI" "deepseek-api-key"))
+      :stream t
+      :models '("deepseek-chat" "deepseek-reasoner"))
+
+  (setq gptel-backend (gptel-get-backend "xAI"))
+
   (add-to-list 'gptel-directives
                '(analyst . "You are an expert Product Analyst and Marketing Strategist.
 1. Analyze the project idea for market viability, target audience, and competitive landscape.
