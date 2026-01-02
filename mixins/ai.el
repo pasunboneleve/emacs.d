@@ -65,7 +65,7 @@
   (aidermacs-default-chat-mode 'architect)
 
   ;; 1. General Model (Code Mode) - Your daily driver
-  (aidermacs-default-model "xai/grok-code-fast-1")
+  (aidermacs-default-model "gemini")
 
   ;; 2. Architect Model (The "Brain") - High-level reasoning
   ;; (aidermacs-architect-model "anthropic/claude-sonnet-4-5-20250929")
@@ -73,11 +73,11 @@
 
   ;; 3. Editor Model (The "Hands") - Applies the Architect's plan
   ;; Gemini 2.0 Flash is currently the best at diff application speed/cost
-  (aidermacs-editor-model "xai/grok-4-fast-non-reasoning")
+  (aidermacs-editor-model "flash")
 
   ;; 4. Weak Model (The "Scribe") - Commits & Summaries
   ;; Keep this as Gemini Flash to keep these interactions free and instant
-  (aidermacs-weak-model "xai/grok-4-1-fast-non-reasoning")
+  (aidermacs-weak-model "flash-lite")
 
   :bind (
          ;; Global binding to open the Transient Menu (The entry point)
