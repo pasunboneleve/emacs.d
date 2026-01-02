@@ -71,12 +71,12 @@
   ;; (aidermacs-architect-model "anthropic/claude-sonnet-4-5-20250929")
   (aidermacs-architect-model "xai/grok-4-1-fast-reasoning")
 
-   ;; 3. Editor Model (The "Hands") - Applies the Architect's plan
-   ;; Gemini 2.0 Flash is currently the best at diff application speed/cost
+  ;; 3. Editor Model (The "Hands") - Applies the Architect's plan
+  ;; Gemini 2.0 Flash is currently the best at diff application speed/cost
   (aidermacs-editor-model "xai/grok-4-fast-non-reasoning")
 
-   ;; 4. Weak Model (The "Scribe") - Commits & Summaries
-   ;; Keep this as Gemini Flash to keep these interactions free and instant
+  ;; 4. Weak Model (The "Scribe") - Commits & Summaries
+  ;; Keep this as Gemini Flash to keep these interactions free and instant
   (aidermacs-weak-model "xai/grok-4-1-fast-non-reasoning")
 
   :bind (
@@ -88,33 +88,48 @@
          ("C-c A a" . aidermacs-add-current-buffer) ; Add file to context
          ("C-c A s" . aidermacs-send-region-or-buffer)) ; Send selection
 
+
   :config
-  ;; Force the base model environment variable
-  ;; This function reads the AI provider API keys from Gnome Keyring. If you
-  ;; are not on Linux it will fail silently and you will need to use the normal
-  ;; aider files or environment variables.
-  (defun my/load-aider-keys-from-secrets ()
-    "Load all *-api-key items from 'AI' collection into environment variables."
-    (interactive)
-    ;; check if "AI" collection exists
-    (if (member "AI" (secrets-list-collections))
-        (dolist (item (secrets-list-items "AI"))
-          ;; Match items named like "gemini-api-key" or "anthropic-api-key"
-          (when (string-match "^\\(.+\\)-api-key$" item)
-            (let* ((provider (match-string 1 item))
-                   (env-var-name (format "%s_API_KEY" (upcase provider)))
-                   (secret-val (secrets-get-secret "AI" item)))
+  :config
+  (defun my/get-aider-api-args ()
+    "Retrieve API keys from GNOME Keyring and return as --api-key args.
+No key values are ever printed."
+    (let ((api-args nil)
+          (attempts 0)
+          (max-attempts 5)
+          success)
+      (while (and (not success) (< attempts max-attempts))
+        (setq attempts (1+ attempts)
+              success t)
+        (if (member "AI" (secrets-list-collections))
+            (dolist (item (secrets-list-items "AI"))
+              (when (string-match "^\\(.+\\)-api-key$" item)
+                (let* ((provider (match-string 1 item))
+                       (secret-val (secrets-get-secret "AI" item)))
+                  (if secret-val
+                      (progn
+                       (push (format "--api-key %s=%s" provider secret-val) api-args)
+                       (message "Aider: Prepared API key for %s (attempt %d)"
+                        provider attempts))
+                    (message "Aider: Failed to retrieve %s-api-key (attempt %d)"
+                     provider attempts)
+                    (setq success nil)))))
+          (message "Aider: 'AI' collection not found (attempt %d)" attempts)
+          (setq success nil))
+        (unless success
+          (sit-for 1)))
+      (unless success
+        (message "Aider: Failed to load all API keys after %d attempts"))
+      (nreverse api-args)))
 
-              ;; Set the environment variable for this emacs process
-              ;; Aider will inherit this automatically.
-              (when secret-val
-                (setenv env-var-name secret-val)
-                (message "Aider: Loaded %s" env-var-name)))))
-      (message "Aider: 'AI' collection not found in keyring.")))
+  (defun my/add-api-keys-silently (orig-fun &rest args)
+    "Inject --api-key args and silence the 'Running ... with ...' message."
+    (let ((aidermacs-extra-args (append aidermacs-extra-args (my/get-aider-api-args)))
+          (inhibit-message t)  ; Suppress messages to minibuffer
+          (message-log-max nil))  ; Suppress messages to *Messages*
+      (apply orig-fun args)))
 
-   ;; Run it immediately
-  (my/load-aider-keys-from-secrets)
-
+  (advice-add 'aidermacs-run :around #'my/add-api-keys-silently)
   :ensure-system-package
   ((cmake)
    (libtool)
