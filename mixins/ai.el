@@ -16,7 +16,9 @@
 (require 'secrets)
 
 (use-package vterm ;; best Aidermacs backend
-  :ensure t
+  :custom (vterm-copy-mode-remove-fake-newlines t)
+  :bind (:map vterm-mode-map
+                ("M-w" . vterm-copy-mode)) ;; Press M-w once to enter copy mode
   :config
   (defun my/sync-vterm-colors-with-theme ()
     "Set vterm-color-settings based on the current theme's ansi-color-names-vector."
@@ -135,6 +137,16 @@ No key values are ever printed."
    (libtool)
    (uv . python-uv)
    (aider . "uv tool install --force --with-pip aider-chat@latest")))
+
+(defun aidermacs-copy-clean-code (beg end)
+  "Copy region and strip internal newlines (fake breaks)
+between BEG and END."
+  (interactive "r")
+  (let ((text (buffer-substring-no-properties beg end)))
+    ;; This regex removes newlines that are NOT followed by a blank line
+    ;; effectively rejoining wrapped code lines.
+    (kill-new (replace-regexp-in-string "\n" "" text))
+    (message "Cleaned code copied to kill-ring.")))
 
 (use-package gptel
   :custom
