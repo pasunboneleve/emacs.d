@@ -15,6 +15,8 @@
 (require 'url)
 (require 'secrets)
 
+;; aidermacs
+
 (use-package vterm ;; best Aidermacs backend
   :custom (vterm-copy-mode-remove-fake-newlines t)
   :bind (:map vterm-mode-map
@@ -147,6 +149,17 @@ between BEG and END."
     ;; effectively rejoining wrapped code lines.
     (kill-new (replace-regexp-in-string "\n" "" text))
     (message "Cleaned code copied to kill-ring.")))
+
+;; agent-shell
+
+(use-package agent-shell
+  :config
+  ;; With function
+  (setq agent-shell-google-authentication
+        (agent-shell-google-make-authentication
+         :api-key (lambda () (secrets-get-secret "AI" "gemini-api-key")))))
+
+;; gptel
 
 (use-package gptel
   :custom
