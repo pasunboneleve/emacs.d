@@ -152,6 +152,15 @@ between BEG and END."
 
 ;; agent-shell
 
+(defun my/set-gemini-model ()
+  "Set the Gemini model via environment variable."
+  (interactive)
+  (let* ((models '("gemini-2.5-pro" "gemini-2.5-flash" "gemini-2.5-flash-lite"))
+         (selected-model (completing-read "Choose Gemini model: " models nil t)))
+    (when selected-model
+      (setenv "GEMINI_MODEL" selected-model)
+      (message "GEMINI_MODEL set to: %s" selected-model))))
+
 (use-package agent-shell
   :config
   ;; With function
