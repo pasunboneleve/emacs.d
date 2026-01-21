@@ -159,6 +159,10 @@ between BEG and END."
         (agent-shell-google-make-authentication
          :api-key (lambda () (secrets-get-secret "AI" "gemini-api-key")))))
 
+(use-package agent-shell-sidebar
+  :after agent-shell
+  :ensure (agent-shell-sidebar :host github :repo "cmacrae/agent-shell-sidebar"))
+
 ;; gptel
 
 (use-package gptel
