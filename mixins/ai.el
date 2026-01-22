@@ -161,16 +161,20 @@ between BEG and END."
       (setenv "GEMINI_MODEL" selected-model)
       (message "GEMINI_MODEL set to: %s" selected-model))))
 
+(use-package agent-shell-sidebar
+  :ensure (agent-shell-sidebar :host github :repo "cmacrae/agent-shell-sidebar")
+  :bind ("C-c M-a a" . agent-shell-sidebar-toggle))
+
 (use-package agent-shell
+  :bind (("C-c M-a r" . agent-shell-send-region)
+         ("C-c M-a f" . agent-shell-send-file)
+         ("C-c M-a o" . agent-shell-send-other-file)
+         ("C-c M-a c" . agent-shell-send-current-file))
   :config
   ;; With function
   (setq agent-shell-google-authentication
         (agent-shell-google-make-authentication
          :api-key (lambda () (secrets-get-secret "AI" "gemini-api-key")))))
-
-(use-package agent-shell-sidebar
-  :after agent-shell
-  :ensure (agent-shell-sidebar :host github :repo "cmacrae/agent-shell-sidebar"))
 
 ;; gptel
 
