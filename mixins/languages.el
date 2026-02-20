@@ -101,6 +101,10 @@
 
 ;;; languages
 
+(with-eval-after-load 'eglot
+  (add-to-list 'eglot-server-programs
+   '(org-mode markdown-mode text-mode . ("harper-ls" "--stdio"))))
+
 (use-package avro-mode
   :ensure nil
   :custom
