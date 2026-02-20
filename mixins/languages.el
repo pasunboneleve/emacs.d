@@ -101,6 +101,7 @@
 
 ;;; languages
 
+;; needs to be installed with `cargo install harper-ls'
 (with-eval-after-load 'eglot
   (add-to-list 'eglot-server-programs
    '(org-mode markdown-mode text-mode . ("harper-ls" "--stdio"))))
