@@ -33,13 +33,15 @@
 
 ;; Popup completion-at-point
 (use-package corfu
-  :ensure (:host github :repo "minad/corfu")
+  :ensure (:host github
+		 :repo "minad/corfu"
+		 :files (:defaults "extensions/*.el"))
   :custom
   (corfu-cycle t)
   (corfu-auto t)
   (corfu-separator ?\s)
   (corfu-scroll-margin 5)
-  :init
+  :config
   (global-corfu-mode))
 
 ;; Add extensions
