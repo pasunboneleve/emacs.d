@@ -42,7 +42,8 @@
   (corfu-separator ?\s)
   (corfu-scroll-margin 5)
   :config
-  (global-corfu-mode))
+  (global-corfu-mode)
+  :hook (text-mode . (lambda () (corfu-mode -1))))
 
 ;; Add extensions
 (use-package cape
