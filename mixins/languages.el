@@ -113,7 +113,7 @@
                 (:dialect "Australian"
                  :linters
                  (:SpellCheck t
-                  :SentenceCapitalization :json-false))))
+                  :UseTitleCase :json-false))))
 
 (use-package avro-mode
   :ensure nil
