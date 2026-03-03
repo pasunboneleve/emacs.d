@@ -104,8 +104,12 @@
 ;; needs to be installed with `cargo install harper-ls'
 ;; this is a nice way of checking grammar with LSP (eglot)
 (with-eval-after-load 'eglot
-  (add-to-list 'eglot-server-programs
-   '(org-mode markdown-mode text-mode . ("harper-ls" "--stdio"))))
+  (setf (alist-get '(markdown-mode gfm-mode org-mode text-mode)
+                   eglot-server-programs nil nil #'equal)
+        '("harper-ls" "--stdio")))
+
+(setq-default eglot-workspace-configuration
+                '(:harper-ls (:dialect "Australian")))
 
 (use-package avro-mode
   :ensure nil
