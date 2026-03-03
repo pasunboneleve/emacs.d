@@ -109,7 +109,11 @@
         '("harper-ls" "--stdio")))
 
 (setq-default eglot-workspace-configuration
-                '(:harper-ls (:dialect "Australian")))
+              '(:harper-ls
+                (:dialect "Australian"
+                 :linters
+                 (:SpellCheck t
+                  :SentenceCapitalization :json-false))))
 
 (use-package avro-mode
   :ensure nil
