@@ -1,71 +1,101 @@
 # emacs.d
 
-`git clone` this repo to your `~/.emacs.d`, `~/.config/emacs` or wherever
-you put your emacs configuration, or browse about and copy/paste the parts
-you like.
+A reproducible Emacs configuration focused on fast navigation, code
+exploration, and architecture workflows — structured to minimise
+state, reduce boilerplate, and avoid config bankruptcy.
 
-Thanks to
-[use-package](https://github.com/jwiegley/use-package),
-[system-packages](https://gitlab.com/jabranham/system-packages) and
-[elpaca](https://github.com/progfolio/elpaca), it has become much easier
-to manage and move the configuration across machines with minimal hassle.
-If you want to scale your configuration, you can't go too wrong reading
-their `README.md`s prior to copy-pasting snippets indiscriminately.
+## Why this exists
 
-Version Compatibility
----------------------
+Most Emacs configs start simple and slowly collapse under their own
+weight.
 
-This configuration was tested with **emacs 30**.
+Packages accumulate. State leaks. Startup slows down. Changes become
+risky.
 
-OS environment
---------------
+This configuration is built to stay maintainable over time:
 
-### OS
+- minimal implicit state
+- clear module boundaries
+- reproducible across machines
+- explicit handling of private configuration
 
-This configuration is geared towards **Fedora Linux** and **Gnome**
-running on **Wayland**. However nothing here prevents it running on other
-platforms except the fact that [system-packages](https://gitlab.com/jabranham/system-packages) is set to
-use the [dnf](https://dnf.readthedocs.io/en/latest/command_ref.html) package
-manager. You can always fork this repo and change
+No rewrites. No “start over from scratch”. No config bankruptcy.
 
-```cl
-system-packages-package-manager 'dnf
+## Architecture
+
+This is not a framework (like
+[Doom](https://github.com/doomemacs/doomemacs) or
+[Spacemacs](https://github.com/syl20bnr/spacemacs)). It’s a
+**core + mixins** system.
+
+- `early-init.el`: startup hygiene (GC, package disabling, secrets, no
+  flicker)
+- `init.el`: bootstrap (elpaca, use-package, defaults, global
+  behaviour)
+- `mixins/`: domain-specific modules loaded in order
+
+Each mixin owns a concern:
+
+- `ui.el` — usability and presentation
+- `dev.el` — editing, navigation, version control, shells
+- `languages.el` — language support orchestration (LSP/eglot +
+  per-language modules)
+- `minibuffers.el` — completion stack (vertico, consult, corfu, etc.)
+- `ai.el` — AI-assisted workflows (local + API-backed)
+- `viewers.el`, `org-config.el`, `tramp-config.el`, etc.
+
+Private behaviour is isolated into encrypted modules:
+- `safe.el.gpg`
+- `communication.el.gpg`
+
+## Key ideas
+
+- **State is the enemy** Everything is structured to minimise hidden
+  state and side effects.
+
+- **Modules over sprawl** Features live in mixins, not scattered
+  across init files.
+
+- **System dependencies are explicit** External tools and language
+  servers are part of the design (`system-packages`).
+
+- **Mixed LSP strategy** Uses `eglot` or `lsp-mode` depending on
+  ecosystem maturity.
+
+- **Private config is first-class** Secrets and personal behaviour are
+  separated via GPG, not commented hacks.
+
+## Installation
+
+```bash
+git clone <repo> ~/.emacs.d
 ```
 
-to `nil` if you want to guess
+If you don’t use encrypted modules, comment out `.gpg` loads in
+`init.el`.
 
-```cl
-system-packages-package-manager nil
-```
+## Environment
 
-or any other package manager you prefer to use in your operating system.
+Tested on:
 
-### Encripted Files
+* Emacs 30
+* Fedora Linux (GNOME, Wayland)
 
-I have some files that are encrypted. If you really want to run this
-in your own computer, you will have to comment out the lines in
-`init.el` that reference encrypted files, e.g., the ones with a `.gpg` extension.
+Other systems should work with minor adjustments (notably
+`system-packages`).
+
+## Fonts
+
+Install a Nerd Font (e.g. Inconsolata Nerd Font) for icons:
 
 ```elisp
-;; Safe
-(load (concat user-emacs-directory "mixins/safe.el.gpg"))
+M-x nerd-icons-install-fonts
 ```
 
-Commenting in [Emacs
-Lisp](https://www.gnu.org/software/emacs/manual/html_mono/elisp.html)
-is done by prepending the line with `;;`. That should be enough to get
-things going.
+## Non-goals
 
-No, I won't give you my **gpg** keys. Yes, I can help you to write
-your own encrypted files using **Linux** if you ask. The documentation
-behind this is a bit scattered, and it took me some effort to figure
-that one out.
+* This is not a drop-in distro
+* This is not beginner-oriented
+* This is not “everything included”
 
-### Nerd Fonts
-
-To have nice icon in **treemacs** and elsewhere, you'll need to
-install the **Inconsolata** Nerd Font. The most convenient way to that
-in **Fedora** is by installing
-[Embellish](https://flathub.org/apps/io.github.getnf.embellish) using
-the **Software** app. I'm sure there are other ways, but for now using
-`M-x nerd-icons-install-fonts` doesn't seem to be enough.
+It’s a **maintainable personal system** you can adapt and evolve.
