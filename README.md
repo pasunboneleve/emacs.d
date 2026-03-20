@@ -25,8 +25,8 @@ No rewrites. No “start over from scratch”. No config bankruptcy.
 
 This is not a framework (like
 [Doom](https://github.com/doomemacs/doomemacs) or
-[Spacemacs](https://github.com/syl20bnr/spacemacs)). It’s a
-**core + mixins** system.
+[Spacemacs](https://github.com/syl20bnr/spacemacs)). It’s a **core +
+mixins** system.
 
 - `early-init.el`: startup hygiene (GC, package disabling, secrets, no
   flicker)
@@ -99,3 +99,17 @@ M-x nerd-icons-install-fonts
 * This is not “everything included”
 
 It’s a **maintainable personal system** you can adapt and evolve.
+
+## Acknowledgements
+
+This configuration builds on ideas from:
+
+- [Mastering Emacs](https://www.masteringemacs.org/book)
+- [Bedrock Emacs](https://github.com/ashton314/emacs-bedrock)
+
+The overall structure — particularly the use of a `mixins/` directory
+and a disciplined `use-package`-driven setup — is inspired by Bedrock.
+
+This repository extends that foundation into a full, everyday system
+with additional modules, system-level dependency management,
+AI-assisted workflows, and reproducibility across machines.
