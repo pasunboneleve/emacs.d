@@ -15,6 +15,14 @@
 (require 'url)
 (require 'secrets)
 
+(use-package codex-ide
+  :ensure (:type git :host github :repo "dgillis/codex-ide")
+  :custom
+  (codex-ide-enable-emacs-tool-bridge t)
+  (codex-ide-emacs-bridge-command-whitelist
+   '(save-buffer other-window delete-other-windows))
+  :bind ("C-c C-;" . codex-ide-menu))
+
 ;; aidermacs
 
 (use-package vterm ;; best Aidermacs backend
