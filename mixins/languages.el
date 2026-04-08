@@ -38,8 +38,6 @@
   (setq
    ;; easier than debugging right now https://emacs-lsp.github.io/lsp-mode/page/file-watchers/
    lsp-enable-file-watchers nil
-   ;; give lsp enough memory
-   read-process-output-max (* 1024 1024) ;; 1mb)
    ;; Probably overkill, but doesn't hurt.
    ;; LSP should use better deserialisation.
    ;; https://emacs-lsp.github.io/lsp-mode/page/performance/#use-plists-for-deserialization

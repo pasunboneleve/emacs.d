@@ -200,6 +200,23 @@
 (menu-bar-mode -1)
 (tool-bar-mode -1)
 
+
+;; Proportional window resizing
+(setq window-combination-resize t)
+
+;; Toggle C-x 1
+(winner-mode +1)
+
+(defun toggle-delete-other-windows ()
+  "Delete other windows in frame if any, or restore previous window config."
+  (interactive)
+  (if (and winner-mode
+           (equal (selected-window) (next-window)))
+      (winner-undo)
+    (delete-other-windows)))
+
+(global-set-key (kbd "C-x 1") #'toggle-delete-other-windows)
+
 ;; My favourite font. Do as you please.
 (add-to-list 'default-frame-alist '(font . "Inconsolata-16"))
 
@@ -404,6 +421,9 @@
 ;; Switch windows easily
 (bind-key* "M-o" 'other-window)
 
+;; Faster mark popping
+(setq set-mark-command-repeat-pop t)
+
 ;; Mode line information
 (setq line-number-mode t)                         ; Show current line in modeline
 (setq column-number-mode t)                       ; Show column as well
@@ -474,6 +494,37 @@
 ;;
 ;; $ gsettings set org.freedesktop.ibus.panel.emoji hotkey '["<Super>e"]'
 ;;
+
+;; No right-to-left language bidirectional parenthesis -- saves cycles
+(setq-default bidi-display-reordering 'left-to-right
+              bidi-paragraph-direction 'left-to-right)
+(setq bidi-inhibit-bpa t)
+
+;; No fontification during input
+(setq redisplay-skip-fontification-on-input t)
+
+;; Increase process output buffer for LSP -- reduces the number of read calls
+(setq read-process-output-max (* 4 1024 1024)) ; 4MB
+
+;; Auto-select help windows
+(setq help-window-select t)
+
+;; Recenter window after `save-place-mode' restores position
+(advice-add 'save-place-find-file-hook :after
+            (lambda (&rest _)
+              (when buffer-file-name (ignore-errors (recenter)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;;   Kill ring
+;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Makes sure kills don't overwrite interprogram copy/paste
+(setq save-interprogram-paste-before-kill t)
+
+;; Don't create duplicates in kill ring
+(setq kill-do-not-save-duplicates t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

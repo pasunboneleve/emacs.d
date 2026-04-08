@@ -282,6 +282,16 @@
 
 (use-package kubernetes)
 
+;; Use normal non-double escaped regex in `re-builder'
+(setq reb-re-syntax 'string)
+
+;; Auto-chmod files that start with #!
+(add-hook 'after-save-hook
+          #'executable-make-buffer-file-executable-if-script-p)
+
+;; Don't `find-file-at-point' if it is in an external hostname
+(setq ffap-machine-p-known 'reject)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;;   emacs introspection
