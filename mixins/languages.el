@@ -431,7 +431,7 @@
   (require 'typst-ts-mode)
   (setq typst-preview-executable typst-ts-lsp-download-path)
   :custom
-  (typst-preview-browser "eaf-browser")                                                                       	; this is the default option; other options are `eaf-browser' or `xwidget'.
+  (typst-preview-browser "default")                                                                       	; this is the default option; other options are `eaf-browser' or `xwidget'.
   (typst-preview-invert-colors "auto")                                                                      	; invert colors depending on system theme
   (typst-preview-partial-rendering t)   ; enable partial rendering
 
