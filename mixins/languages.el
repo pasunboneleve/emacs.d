@@ -423,7 +423,8 @@
 (use-package typst-watch
   :ensure (typst-watch
            :host github
-           :repo "pasunboneleve/typst-watch"))
+           :repo "pasunboneleve/typst-watch")
+  :mode "\\.typ\\'")
 
 (provide 'languages)
 ;;; languages.el ends here.
