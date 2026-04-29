@@ -411,7 +411,6 @@
 ;; typst
 
 (use-package typst-ts-mode
-  :ensure t
   :config
   (add-to-list 'eglot-server-programs
                `((typst-ts-mode)
@@ -421,23 +420,10 @@
                        "typst-lsp"))))
   :mode "\\.typ\\'")
 
-(use-package websocket)
-
-(use-package typst-preview
-  ;; :load-path "path/to/typst-preview.el" ;; if installed manually
-  :init
-  (setq typst-preview-autostart t) ; start preview automatically when typst-preview-mode is activated
-  (setq typst-preview-open-browser-automatically t) ; open browser automatically when typst-preview-start is run
-  (require 'typst-ts-mode)
-  (setq typst-preview-executable typst-ts-lsp-download-path)
-  :custom
-  (typst-preview-browser "default")                                                                       	; this is the default option; other options are `eaf-browser' or `xwidget'.
-  (typst-preview-invert-colors "auto")                                                                      	; invert colors depending on system theme
-  (typst-preview-partial-rendering t)   ; enable partial rendering
-
-  :config
-  (define-key typst-preview-mode-map (kbd "C-c C-j") 'typst-preview-send-position))
-
+(use-package typst-watch
+  :ensure (typst-watch
+           :host github
+           :repo "pasunboneleve/typst-watch"))
 
 (provide 'languages)
 ;;; languages.el ends here.
