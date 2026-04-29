@@ -421,6 +421,7 @@
   :mode "\\.typ\\'")
 
 (use-package typst-watch
+  :after typst-ts-mode
   :ensure (typst-watch
            :host github
            :repo "pasunboneleve/typst-watch")
