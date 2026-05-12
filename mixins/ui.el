@@ -176,5 +176,10 @@
   :hook
   ((prog-mode text-mode dired-mode shell-mode) . context-menu-mode))
 
+;; breadcrumbs
+
+(use-package breadcrumb
+ :ensure (:host github :repo "joaotavora/breadcrumb"))
+
 (provide 'ui)
 ;;; ui.el ends here.
