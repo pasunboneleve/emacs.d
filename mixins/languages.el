@@ -133,6 +133,104 @@
 ;; csv files
 (load-file (concat user-emacs-directory "mixins/languages/csv-config.el"))
 
+;;; C# / OmniSharp / Eglot
+;;
+;; Fedora install notes:
+;;
+;; 1. Install the .NET SDK.
+;;
+;;    Fedora packages .NET directly. Microsoft’s Fedora instructions show:
+;;
+;;      sudo dnf install dotnet-sdk-8.0
+;;
+;;    Fedora’s own developer docs also use the generic form:
+;;
+;;      sudo dnf install dotnet-sdk-x.y
+;;
+;;    For example:
+;;
+;;      sudo dnf install dotnet-sdk-9.0
+;;
+;;    Check with:
+;;
+;;      dotnet --info
+;;
+;;    The SDK is needed, not just the runtime, because OmniSharp/Roslyn needs
+;;    project-loading/build metadata for semantic diagnostics and completion.
+;;
+;; 2. Install OmniSharp Roslyn, preferably the net6.0 Linux build.
+;;
+;;      mkdir -p ~/.local/opt/omnisharp
+;;      cd ~/.local/opt/omnisharp
+;;
+;;      curl -L -o omnisharp-linux-x64-net6.0.tar.gz \
+;;        https://github.com/OmniSharp/omnisharp-roslyn/releases/latest/download/omnisharp-linux-x64-net6.0.tar.gz
+;;
+;;      tar -xzf omnisharp-linux-x64-net6.0.tar.gz
+;;
+;;    The OmniSharp README says the net6.0 build requires .NET SDK >= 6.0.
+;;    Avoid the old Mono/net472 build on Fedora unless necessary; it may start
+;;    but fail to discover/load MSBuild correctly.
+;;
+;; 3. Add a small wrapper on PATH.
+;;
+;;      mkdir -p ~/.local/bin
+;;
+;;      cat > ~/.local/bin/omnisharp <<'EOF'
+;;      #!/usr/bin/env bash
+;;      exec dotnet "$HOME/.local/opt/omnisharp/OmniSharp.dll" "$@"
+;;      EOF
+;;
+;;      chmod +x ~/.local/bin/omnisharp
+;;
+;;    Test with:
+;;
+;;      which omnisharp
+;;      omnisharp -lsp -s /tmp/some-dotnet-project
+;;
+;; 4. Smoke-test a project.
+;;
+;;      cd /tmp
+;;      dotnet new console -n EglotCsharpSmoke
+;;      cd EglotCsharpSmoke
+;;      dotnet restore
+;;      dotnet build
+;;      emacs Program.cs
+;;
+;;    In Program.cs, add:
+;;
+;;      ThisDefinitelyDoesNotExist();
+;;
+;;    `dotnet build` should report CS0103. Eglot/Flymake should eventually
+;;    report the same semantic diagnostic. If Flymake works only for syntax
+;;    errors but not CS0103, OmniSharp probably has not loaded the .csproj.
+;;
+;; Why this Eglot entry is a lambda:
+;;
+;; A static entry like:
+;;
+;;   '((csharp-mode csharp-ts-mode) "omnisharp" "-lsp")
+;;
+;; can start OmniSharp successfully while still failing to load the actual
+;; project. In that state Eglot reports success, but hover/completion/semantic
+;; diagnostics are mostly absent.
+;;
+;; Passing `-s PROJECT-ROOT` is the important part. It forces OmniSharp to load
+;; the .csproj/.sln for the buffer’s Eglot project.
+
+(use-package csharp-mode
+ :ensure nil
+ :hook (csharp-mode . eglot-ensure)
+ :config
+ (add-to-list 'major-mode-remap-alist '(csharp-mode . csharp-ts-mode))
+ (with-eval-after-load 'eglot
+   (add-to-list 'eglot-server-programs
+                `((csharp-mode csharp-ts-mode)
+                  . ,(lambda (_interactive project)
+                       ;; OmniSharp may start from the wrapper's cwd.
+                       ;; Force the actual project root so it loads the .csproj/.sln.
+                      (list "omnisharp" "-lsp" "-s" (project-root project)))))))
+
 ;; Dhall
 (use-package dhall-mode
   :mode "\\.dhall\\'")
