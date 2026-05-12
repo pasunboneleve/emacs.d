@@ -151,5 +151,30 @@
 (use-package doom-modeline
   :init (doom-modeline-mode 1))
 
+
+;; context dialog, including copy/paste from the mouse
+
+(use-package anju
+  :ensure (:host github :repo "kickingvegas/anju")
+  :init
+  ;; Anju requires `dictionary` via `anju-context-menu`.
+  ;; `dictionary-word-definition-face` has a bad fallback on this system:
+  ;;
+  ;;   (:font "default")
+  ;;
+  ;; "default" is a face, not a font family. Set the face before Anju loads,
+  ;; so `dictionary` sees the user customisation during its `defface`.
+  (custom-set-faces
+   '(dictionary-word-definition-face
+     ((t (:inherit default)))))
+
+  (setq anju-reconfigure-main-menu-enable nil)
+
+  :config
+  (anju-init)
+
+  :hook
+  ((prog-mode text-mode dired-mode shell-mode) . context-menu-mode))
+
 (provide 'ui)
 ;;; ui.el ends here.
