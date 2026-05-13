@@ -63,7 +63,8 @@
 
 (use-package js-ts-mode
   :ensure nil
-  :mode (("\\.c?js\\'" . js-ts-mode))
+  :mode (("\\.cjs\\'" . js-ts-mode)
+         ("\\.mjs\\'" . js-ts-mode))
   :hook
   ((js-mode . lsp)
    (js-mode . (lambda ()
