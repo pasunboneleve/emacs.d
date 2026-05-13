@@ -231,6 +231,9 @@
                        ;; Force the actual project root so it loads the .csproj/.sln.
                       (list "omnisharp" "-lsp" "-s" (project-root project)))))))
 
+(use-package csproj-mode
+  :mode ("\\.csproj\\'" . csproj-mode))
+
 ;; Dhall
 (use-package dhall-mode
   :mode "\\.dhall\\'")
