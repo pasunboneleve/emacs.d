@@ -102,7 +102,6 @@
 
 
   :config
-  :config
   (defun my/get-aider-api-args ()
     "Retrieve API keys from GNOME Keyring and return as --api-key args.
 No key values are ever printed."
@@ -131,7 +130,7 @@ No key values are ever printed."
         (unless success
           (sit-for 1)))
       (unless success
-        (message "Aider: Failed to load all API keys after %d attempts"))
+        (message "Aider: Failed to load all API keys after %d attempts" max-attempts))
       (nreverse api-args)))
 
   (defun my/add-api-keys-silently (orig-fun &rest args)

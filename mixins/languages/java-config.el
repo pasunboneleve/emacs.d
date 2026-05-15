@@ -3,6 +3,10 @@
 ;;; Java configuration
 ;;; Code:
 
+(require 'cl-generic)
+(require 'eglot)
+(require 'subr-x)
+
 (defvar +eglot/initialization-options-map (make-hash-table :size 5))
 
 (cl-defmethod eglot-initialization-options ((server eglot-lsp-server))
@@ -38,12 +42,10 @@
            :extendedClientCapabilities (:classFileContentsSupport t)
            ;; bundles: decompilers, etc.
            ;; https://github.com/dgileadi/dg.jdt.ls.decompiler
-           :bundles ,(let ((bundles-dir (expand-file-name (locate-user-emacs-file "cache/language-server/java/bundles" user-emacs-directory)))
-                           jdtls-bundles)
-                       (->> (when (file-directory-p bundles-dir)
-                              (directory-files bundles-dir t "\\.jar$"))
-                            (append jdtls-bundles)
-                            (apply #'vector))))
+           :bundles ,(let ((bundles-dir (expand-file-name (locate-user-emacs-file "cache/language-server/java/bundles" user-emacs-directory))))
+                       (apply #'vector
+                              (when (file-directory-p bundles-dir)
+                                (directory-files bundles-dir t "\\.jar$")))))
          +eglot/initialization-options-map)
 
 (cl-defmethod eglot-execute-command

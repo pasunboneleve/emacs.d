@@ -35,7 +35,7 @@
         (compile (format "dbt run --select %s %s" model-name extra-args)))
     (message "No file associated with this buffer.")))
 
-(global-set-key (kbd "C-c d r") 'dbt-run)
+(global-set-key (kbd "C-c d r") 'dbt-run-current-model)
 
 (provide 'dbt)
 ;;; dbt.el ends here

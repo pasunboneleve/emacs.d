@@ -29,48 +29,6 @@
 
 ;;; LSP
 
-(use-package lsp-mode
-  ;; lsp does not define this variable by
-  ;; default, so we have to set it here
-  :custom
-  (lsp-enable-snippet nil)
-  :init
-  (setq
-   ;; easier than debugging right now https://emacs-lsp.github.io/lsp-mode/page/file-watchers/
-   lsp-enable-file-watchers nil
-   ;; Probably overkill, but doesn't hurt.
-   ;; LSP should use better deserialisation.
-   ;; https://emacs-lsp.github.io/lsp-mode/page/performance/#use-plists-for-deserialization
-   lsp-use-plists t
-   ;; Yes, I want to restart
-   lsp-restart 'auto-restart
-   lsp-enable-folding nil
-   lsp-enable-snippet nil)
-  :bind-keymap ("s-l" . lsp-command-map)
-  :hook (lsp-managed-mode . (lambda ()
-                              (add-hook 'before-save-hook 'lsp-format-buffer nil t)
-                              (add-hook 'before-save-hook 'lsp-organize-imports nil t))))
-
-(use-package lsp-ui
-  :hook (lsp-mode . lsp-ui-mode)
-  :custom
-  (lsp-ui-doc-enable t)
-  (lsp-ui-doc-position 'bottom)
-  (lsp-ui-doc-use-webkit nil)
-  :config
-  (progn
-    (define-key lsp-ui-mode-map
-                [remap haskell-mode-jump-to-def-or-tag] #'lsp-ui-peek-find-definitions)
-    (define-key lsp-ui-mode-map
-                [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
-    (define-key lsp-ui-mode-map
-                [remap xref-find-references] #'lsp-ui-peek-find-references))
-  :commands lsp-ui-mode)
-
-(use-package lsp-treemacs)
-
-;; eglot
-
 (use-package eglot
   :ensure nil
   :after eldoc
@@ -285,8 +243,7 @@
   :custom (js-indent-level 2))
 
 ;; java
-(use-package lsp-java
-  :hook (java-mode . eglot-ensure))
+(load-file (concat user-emacs-directory "mixins/languages/java-config.el"))
 
 ;;; javascript & web
 (load-file (concat user-emacs-directory "mixins/languages/web-config.el"))
@@ -375,12 +332,6 @@
   :requires magit-section
   :config
   (add-to-list 'eglot-server-programs '(nix-mode . ("nil")))
-  (if (featurep 'lsp-mode)
-      (progn  (add-to-list 'lsp-language-id-configuration '(nix-mode . "nil"))
-              (lsp-register-client
-               (make-lsp-client :new-connection (lsp-stdio-connection '("nil"))
-                                :major-modes '(nix-mode)
-                                :server-id 'nix))))
   :ensure-system-package (nil . "nix-env -i nil")
   :hook
   (nix-mode . eglot-ensure)
@@ -475,14 +426,6 @@
   :bind (:map hoon-mode-map
               ("C-c r" . hoon-eval-region-in-herb)
               ("C-c b" . hoon-eval-buffer-in-herb))
-  :init
-  ;; lsp-mode
-  (push '(hoon-mode . "hoon") lsp-language-id-configuration)
-  (lsp-register-client
-   (make-lsp-client
-    :new-connection (lsp-stdio-connection "hoon-language-server")
-    :activation-fn (lsp-activate-on "hoon")
-    :server-id 'hoon-language-server))
   :hook
   (hoon-mode . eldoc-box-hover-mode))
   ;;; This won't work, eglot-code-action-organize-imports must know

@@ -19,7 +19,7 @@
   :init
   (pdf-tools-install)
   :hook
-  (pdf-view-mode . (lambda (display-line-numbers-mode nil))))
+  (pdf-view-mode . (lambda () (display-line-numbers-mode -1))))
 
 (use-package image-mode
   :ensure nil

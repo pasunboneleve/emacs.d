@@ -39,9 +39,10 @@
   :mode ("\\.py\\'" . python-ts-mode)
   :ensure nil
   :config
-  (add-to-list 'eglot-server-programs '((python-ts-mode . "pyright")))
+  (add-to-list 'eglot-server-programs
+               '((python-ts-mode . ("pyright-langserver" "--stdio"))))
   :hook
-  (python . eglot-ensure)
+  (python-ts-mode . eglot-ensure)
   :ensure-system-package (pyright-langserver . "uv tool install pyright"))
 
 (provide 'python-config)

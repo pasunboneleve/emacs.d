@@ -66,7 +66,7 @@
   :mode (("\\.cjs\\'" . js-ts-mode)
          ("\\.mjs\\'" . js-ts-mode))
   :hook
-  ((js-mode . lsp)
+  ((js-ts-mode . eglot-ensure)
    (js-mode . (lambda ()
                 (require 'tide)
                 (tide-setup)))))
