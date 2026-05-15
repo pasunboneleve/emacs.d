@@ -180,6 +180,8 @@
 
 
 ;; term
+(use-package ghostel)
+
 (use-package multi-term)
 
 ;; elisp term
