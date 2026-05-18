@@ -81,6 +81,14 @@
 ;; Block until current queue processed.
 (elpaca-wait)
 
+(use-package delight
+  :ensure (:wait t)
+  :demand t
+  :config
+  (delight '((which-key-mode nil t)
+             (visual-line-mode nil t)
+             (eldoc-mode nil t))))
+
 ;; add modules within this directory to the scope
 (add-to-list 'load-path
              (expand-file-name "local-packages" user-emacs-directory))
