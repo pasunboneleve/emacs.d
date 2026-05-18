@@ -25,7 +25,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;; bootstrap elpaca
-(defvar elpaca-installer-version 0.11)
+(defvar elpaca-installer-version 0.12)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
 (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
@@ -88,6 +88,12 @@
   (delight '((which-key-mode nil t)
              (visual-line-mode nil t)
              (eldoc-mode nil t))))
+
+;; Let Elpaca install newer versions of bundled packages when the bundled
+;; versions are already known to lag current dependency requirements.
+(setq elpaca-ignored-dependencies
+      (seq-difference elpaca-ignored-dependencies
+                      '(compat transient)))
 
 ;; add modules within this directory to the scope
 (add-to-list 'load-path

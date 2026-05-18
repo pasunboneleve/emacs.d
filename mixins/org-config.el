@@ -10,14 +10,8 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; org is loaded by other packages, so it must be loaded first lest we load
-;; conflicting versions
 (use-package org
-  :demand t
-  :ensure (org
-           :host github
-           :repo "bzg/org-mode"
-           :files (:defaults "lisp/*"))
+  :ensure nil
   :mode ("\\.org\\'" . org-mode)
   :custom
   (org-todo-keywords
@@ -34,8 +28,7 @@
  (:map org-mode-map
        ("C-c l" . org-store-link)
        ("C-c a" . org-agenda)
-       ("C-c c" . org-capture))
- :config (define-key org-mode-map (kbd "C-c C-r") verb-command-map))
+       ("C-c c" . org-capture)))
 
 (use-package org-pandoc-import
   :after org
@@ -67,7 +60,9 @@
 
 ;; rest
 (use-package verb
-  :after org)
+  :after org
+  :config
+  (define-key org-mode-map (kbd "C-c C-r") verb-command-map))
 
 ;; jupyter
 (use-package jupyter)

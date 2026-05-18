@@ -28,6 +28,7 @@
   (Info-selection . rainbow-delimiters-mode))
 
 (use-package which-key
+  :ensure nil
   :config
   (which-key-mode))
 
@@ -95,16 +96,15 @@
 
 (use-package smart-mode-line
   :init
-  (progn
-    (setq sml/theme 'respectful
-          sml/shorten-directory t
-          sml/name-width 32
-          sml/shorten-modes t
-          sml/extra-filler 0)
-    ;; sml/use-projectile-p 'before-prefixes
-    ;; sml/projectile-replacement-format "%s/"
-
-    (sml/setup)))
+  (setq sml/theme 'respectful
+        sml/shorten-directory t
+        sml/name-width 32
+        sml/shorten-modes t
+        sml/extra-filler 0)
+  ;; sml/use-projectile-p 'before-prefixes
+  ;; sml/projectile-replacement-format "%s/"
+  :config
+  (sml/setup))
 
 ;; dired but nice
 (use-package dirvish

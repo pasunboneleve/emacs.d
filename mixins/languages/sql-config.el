@@ -31,8 +31,7 @@
 (use-package sqlformat
   :ensure (sqlformat
            :host github
-           :repo "purcell/sqlformat"
-           :branch "master")
+           :repo "purcell/sqlformat")
   :custom
   (sqlformat-command 'sqlfluff)
   (sqlformat-args '("--dialect" "bigquery"))

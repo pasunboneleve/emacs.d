@@ -201,13 +201,8 @@
 ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(use-package transient
-  :pin gnu)
-
 (use-package magit
-  :requires (transient git-commit)
   :pin gnu
-  :after transient
   ;; :hook
   ;; (git-commit-setup . (lambda () (electric-indent-local-mode -1)))
   :config
