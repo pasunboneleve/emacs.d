@@ -256,7 +256,18 @@
 
 ;; Keep customisations out of my config
 (setq custom-file (concat user-emacs-directory "custom.el.gpg"))
-(load custom-file)
+
+(defun be/load-optional-user-file (file)
+  "Load FILE, warning instead of aborting when local secrets are unavailable."
+  (condition-case err
+      (load file t nil nil t)
+    (file-error
+     (display-warning
+      'user-init-file
+      (format "Skipping %s: %s" file (error-message-string err))
+      :warning))))
+
+(be/load-optional-user-file custom-file)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -375,13 +386,21 @@
 (push '(fullscreen . maximized) initial-frame-alist)
 (push '(fullscreen . maximized) default-frame-alist)
 
+(defun be/restore-startup-display ()
+  "Restore display and message output after early startup."
+  ;; Leave these variables alone elsewhere; this only reverts the early-init
+  ;; startup suppression.
+  (setq-default inhibit-redisplay nil
+                inhibit-message nil))
+
+;; Daemon startup may have no initial window, so reset display suppression once
+;; init finishes as well as during normal window setup.
+(add-hook 'after-init-hook #'be/restore-startup-display)
+
 ;; we can redisplay now, boot is over
 (add-hook 'window-setup-hook
           (lambda ()
-            ;; leave this inhibit-redisplay alone! We're setting it
-            ;; back to its original value.
-            (setq-default inhibit-redisplay nil
-                          inhibit-message nil)
+            (be/restore-startup-display)
             (default-frame-layout-hook (selected-frame))))
 
 ;;; focus on emacs frame when it is started
@@ -587,7 +606,7 @@
 (load-file (concat user-emacs-directory "mixins/entertainment.el"))
 
 ;; Email and internet messaging
-(load (concat user-emacs-directory "mixins/communication.el.gpg") t nil nil t)
+(be/load-optional-user-file (concat user-emacs-directory "mixins/communication.el.gpg"))
 
 ;; Orgmode
 (load (concat user-emacs-directory "mixins/org-config.el"))
@@ -596,7 +615,7 @@
 (load (concat user-emacs-directory "mixins/tramp-config.el"))
 
 ;; Safe
-(load (concat user-emacs-directory "mixins/safe.el.gpg"))
+(be/load-optional-user-file (concat user-emacs-directory "mixins/safe.el.gpg"))
 
 ;; Modes that must be loaded early
 (load-file (concat user-emacs-directory "mixins/early-modes.el"))
