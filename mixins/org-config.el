@@ -18,6 +18,7 @@
    '((sequence "TODO" "IN-PROGRESS" "WONT-DO" "DONE")))
   (org-tag-alist '(("@work" . ?w) ("@emacs" . ?e) ("urbit" . ?u)))
   :init
+ (require 'info)
  (add-to-list 'Info-directory-list "~/.config/emacs/elpaca/repos/org-mode/doc")
  (org-babel-do-load-languages
   'org-babel-load-languages

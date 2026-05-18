@@ -130,15 +130,22 @@
          ("C-c C-d" . helpful-at-point)
          ("C-h F" . helpful-function)))
 
-;; Nicer icons everywhere. Make sure you install them with
-;; M-x nerd-icons-install-fonts
-(use-package nerd-icons
-  :custom
- (nerd-icons-font-family "Inconsolata Nerd Font Regular"))
+(use-package all-the-icons
+  :ensure (:wait t)
+  :demand t)
 
-(use-package treemacs-nerd-icons
-  :config
-  (treemacs-load-theme "nerd-icons"))
+(use-package all-the-icons-dired
+  :requires all-the-icons
+  :hook (dired-mode . all-the-icons-dired-mode))
+
+(declare-function treemacs-load-theme "treemacs")
+
+(with-eval-after-load 'treemacs
+  (add-to-list 'load-path
+               (expand-file-name "elpaca/sources/treemacs/src/extra"
+                                 user-emacs-directory))
+  (require 'treemacs-all-the-icons)
+  (treemacs-load-theme "all-the-icons"))
 
 (use-package doom-modeline
   :init (doom-modeline-mode 1))

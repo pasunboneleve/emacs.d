@@ -5,9 +5,6 @@
 
 (add-to-list 'major-mode-remap-alist '(python-mode . python-ts-mode))
 
-(use-package poetry
-  :ensure-system-package (poetry))
-
 (use-package uv-mode
   :delight " UV"
   :hook (python-ts-mode . uv-mode-auto-activate-hook)
@@ -35,15 +32,14 @@
            :repo "erickgnavar/flymake-ruff")
   :ensure-system-package (ruff))
 
-(use-package python-ts-mode
+(use-package python
   :mode ("\\.py\\'" . python-ts-mode)
   :ensure nil
   :config
   (add-to-list 'eglot-server-programs
                '((python-ts-mode . ("pyright-langserver" "--stdio"))))
   :hook
-  (python-ts-mode . eglot-ensure)
-  :ensure-system-package (pyright-langserver . "uv tool install pyright"))
+  (python-ts-mode . eglot-ensure))
 
 (provide 'python-config)
 ;;; python-config.el ends here

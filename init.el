@@ -74,7 +74,10 @@
 
 ;; Install system-packages
 (elpaca system-packages
-  (setq system-packages-use-sudo t ;; change to t if installing, else avoid it.
+  ;; Let `:ensure-system-package' use TRAMP sudo when it really needs to
+  ;; install a missing dependency.  The password prompt stays in TRAMP/auth
+  ;; handling rather than being passed through shell command text.
+  (setq system-packages-use-sudo t
         system-packages-package-manager 'dnf
         async-shell-command-buffer 'new-buffer))
 
@@ -88,6 +91,12 @@
   (delight '((which-key-mode nil t)
              (visual-line-mode nil t)
              (eldoc-mode nil t))))
+
+(use-package compat
+  :ensure (:wait t)
+  :demand t
+  :config
+  (require 'compat-31))
 
 ;; Let Elpaca install newer versions of bundled packages when the bundled
 ;; versions are already known to lag current dependency requirements.
@@ -192,7 +201,7 @@
 
 ;;; auto-byte-compile
 (setq load-prefer-newer t)
-(package-initialize)
+(require 'package)
 (use-package auto-compile
   :config
   '((auto-compile-on-load-mode)
@@ -270,6 +279,10 @@
 
 ;; Keep customisations out of my config
 (setq custom-file (concat user-emacs-directory "custom.el.gpg"))
+
+;; Theme trust is part of this config.  Do not prompt on every new machine when
+;; Custom or package setup activates a configured theme during startup.
+(setq custom-safe-themes t)
 
 (defun be/load-optional-user-file (file)
   "Load FILE, warning instead of aborting when local secrets are unavailable."
@@ -382,6 +395,8 @@
        (remove nil matches)))
 
 (use-package treemacs
+  :ensure (:wait t)
+  :demand t
   :custom
   (treemacs-show-hidden-files t)
   (treemacs-file-follow-ignore-functions
@@ -429,16 +444,27 @@
   (when (display-graphic-p frame)
     (my-maximized-frame-layout)))
 
+(defun be/startup-treemacs-root ()
+  "Return the directory Treemacs should show during startup."
+  (or (when-let (project (project-current nil))
+        (project-root project))
+      default-directory
+      (expand-file-name "~")))
+
 ;;; make a maximized function
 (defun my-maximized-frame-layout ()
   "Make Emacs frame use all the screen area."
   (progn
     (scroll-bar-mode -1)
     (split-window-horizontally)
-    (if (and (featurep 'treemacs)
-             (not (eq (treemacs-current-visibility)
-                      'visible)))
-        (treemacs))))
+    (when (fboundp 'treemacs)
+      (unless (and (fboundp 'treemacs-current-visibility)
+                   (eq (treemacs-current-visibility) 'visible))
+        (if (fboundp 'treemacs--read-first-project-path)
+            (cl-letf (((symbol-function 'treemacs--read-first-project-path)
+                       #'be/startup-treemacs-root))
+              (treemacs))
+          (treemacs))))))
 
 ;;; that's what emacs-daemon uses
 (add-hook
@@ -585,11 +611,6 @@
   :config
   (load-theme 'solarized-dark t))
 
-(use-package all-the-icons)
-(use-package all-the-icons-dired
-  :requires all-the-icons
-  :hook (dired-mode . all-the-icons-dired-mode))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;;   Optional mixins
@@ -600,6 +621,9 @@
 
 ;; UI/UX enhancements mostly focused on minibuffer and autocompletion interfaces
 (load-file (concat user-emacs-directory "mixins/ui.el"))
+
+;; Modes that must be loaded early
+(load-file (concat user-emacs-directory "mixins/early-modes.el"))
 
 ;; Packages for software development
 (load-file (concat user-emacs-directory "mixins/dev.el"))
@@ -630,9 +654,6 @@
 
 ;; Safe
 (be/load-optional-user-file (concat user-emacs-directory "mixins/safe.el.gpg"))
-
-;; Modes that must be loaded early
-(load-file (concat user-emacs-directory "mixins/early-modes.el"))
 
 (provide 'init)
 ;;; init.el ends here

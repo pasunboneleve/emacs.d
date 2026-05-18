@@ -180,7 +180,8 @@
 
 
 ;; term
-(use-package ghostel)
+(use-package ghostel
+  :commands (ghostel ghostel-project ghostel-download-module ghostel-module-compile))
 
 (use-package multi-term)
 
@@ -226,13 +227,6 @@
 
 (use-package abridge-diff
   :after magit)
-
-;;; Install github cli tool from https://cli.github.com/manual/installation
-(use-package consult-gh
-  :after consult
-  :ensure (consult-gh :host github :repo "armindarvish/consult-gh")
-  :config
-  (setq consult-gh-default-clone-directory "~/src/vendor/"))
 
 (use-package ediff
   :ensure nil

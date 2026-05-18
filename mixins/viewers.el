@@ -3,10 +3,10 @@
 ;;; File viewers.
 ;;; Code:
 
-(use-package docview
+(use-package doc-view
   :ensure nil
   :bind (:map
-         docview-mode-map
+         doc-view-mode-map
          ("<mouse-4>" . doc-view-scroll-down-or-previous-page)
          ("<mouse-5>" . doc-view-scroll-up-or-next-page)
          ("<mouse-6>" . image-scroll-right)
@@ -16,8 +16,7 @@
 
 (use-package pdf-tools
   :custom (pdf-view-display-size 'fit-height)
-  :init
-  (pdf-tools-install)
+  :mode ("\\.pdf\\'" . pdf-view-mode)
   :hook
   (pdf-view-mode . (lambda () (display-line-numbers-mode -1))))
 

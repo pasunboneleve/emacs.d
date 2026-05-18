@@ -22,7 +22,8 @@
 
 ;; Vertico: better vertical completion for minibuffer commands
 (use-package vertico
-  :init
+  :after compat
+  :config
   (fido-mode -1)
   (vertico-mode))
 

@@ -94,12 +94,6 @@
    :preview-key '(:debounce 0.2 any)
    consult-ripgrep consult-git-grep consult-grep
    consult-bookmark consult-recent-file consult-xref
-   consult--source-recent-file
-   consult--source-project-recent-file
-   consult--source-bookmark
-   ;;; perspective.el
-   consult--source-buffer :default nil
-   ;;;
    :preview-key "M-.")
 
   ;; ;;; perspective.el
@@ -127,6 +121,13 @@
   ;; (setq consult-project-root-function #'vc-root-dir)
   ;;;; 4. locate-dominating-file
   ;; (setq consult-project-root-function (lambda () (locate-dominating-file "." ".git")))
+
+;;; Install github cli tool from https://cli.github.com/manual/installation
+(use-package consult-gh
+  :after consult
+  :ensure (consult-gh :host github :repo "armindarvish/consult-gh")
+  :config
+  (setq consult-gh-default-clone-directory "~/src/vendor/"))
 
 (use-package embark
   :ensure t
