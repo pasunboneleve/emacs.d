@@ -233,7 +233,8 @@
   :config
   (setq ediff-window-setup-function 'ediff-setup-windows-plain
         ediff-split-window-function 'split-window-horizontally
-        ediff-prefer-iconified-control-frame t))
+        ediff-prefer-iconified-control-frame t
+        ediff-auto-refine 'on))
 
 ;; major mode for viewing logs
 (use-package logview)
