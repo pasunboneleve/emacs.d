@@ -221,9 +221,9 @@
   (setq vc-display-status nil) ;; don't display branch name in mode line
   (if (not (boundp 'project-switch-commands))
       (setq project-switch-commands nil))
-  :bind (:map
-         magit-mode-map
-         ("C-x g" . magit-status)))
+  :bind (("C-x g" . magit-status)
+         :map magit-mode-map
+         ("C-c e" . magit-ediff-compare)))
 
 (use-package abridge-diff
   :after magit)
