@@ -140,12 +140,10 @@
 
 (declare-function treemacs-load-theme "treemacs")
 
-(with-eval-after-load 'treemacs
-  (add-to-list 'load-path
-               (expand-file-name "elpaca/sources/treemacs/src/extra"
-                                 user-emacs-directory))
-  (require 'treemacs-all-the-icons)
-  (treemacs-load-theme "all-the-icons"))
+(use-package treemacs-nerd-icons
+  :after treemacs
+  :config
+  (treemacs-load-theme "nerd-icons"))
 
 (use-package doom-modeline
   :init (doom-modeline-mode 1))
