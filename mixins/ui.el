@@ -138,12 +138,17 @@
   :requires all-the-icons
   :hook (dired-mode . all-the-icons-dired-mode))
 
+(use-package nerd-icons
+  :ensure (:wait t :files (:defaults "data" "fonts"))
+  :demand t)
+
 (declare-function treemacs-load-theme "treemacs")
+(declare-function treemacs-nerd-icons-config "treemacs-nerd-icons")
 
 (use-package treemacs-nerd-icons
   :after treemacs
   :config
-  (treemacs-load-theme "nerd-icons"))
+  (treemacs-nerd-icons-config))
 
 (use-package doom-modeline
   :init (doom-modeline-mode 1))
