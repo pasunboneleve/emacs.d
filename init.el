@@ -24,6 +24,21 @@
 ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defconst be/batch-bootstrap
+  (and noninteractive
+       (string= (getenv "NATIVE_DISABLED") "1"))
+  "Non-nil when chezmoi starts a memory-constrained package install pass.")
+
+(defun be/disable-native-compilation-for-batch-bootstrap ()
+  "Disable native compilation before Elpaca loads during batch bootstrap."
+  (setq native-comp-jit-compilation nil
+        native-comp-deferred-compilation nil
+        native-comp-async-query-on-exit nil
+        package-native-compile nil))
+
+(when be/batch-bootstrap
+  (be/disable-native-compilation-for-batch-bootstrap))
+
 ;;; bootstrap elpaca
 (defvar elpaca-installer-version 0.12)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
@@ -63,6 +78,63 @@
     (load "./elpaca-autoloads")))
 (add-hook 'after-init-hook #'elpaca-process-queues)
 (elpaca `(,@elpaca-order))
+
+(defun be/elpaca-drop-plist-key (plist key)
+  "Return PLIST without KEY."
+  (let (result)
+    (while plist
+      (let ((current-key (pop plist))
+            (current-value (pop plist)))
+        (unless (eq current-key key)
+          (setq result (append result (list current-key current-value))))))
+    result))
+
+(defun be/elpaca-drop-wait (order)
+  "Return Elpaca ORDER without its top-level `:wait' keyword."
+  (if (and be/batch-bootstrap
+           (consp order)
+           (not (eq (car order) 'quote)))
+      (cons (car order) (be/elpaca-drop-plist-key (cdr order) :wait))
+    order))
+
+(defun be/elpaca-expand-without-batch-wait (fn order body)
+  "Call FN with ORDER stripped of `:wait' during batch bootstrap.
+Batch bootstrap still installs every package, but it must not block inside
+individual `:wait' orders.  The final explicit `elpaca-wait' handles the whole
+queue after all declarations have been read."
+  (funcall fn (be/elpaca-drop-wait order) body))
+
+(defun be/elpaca-queue-items-terminal-p (queue)
+  "Return non-nil when every item in QUEUE has finished or failed.
+Elpaca also treats `blocked' as inactive, but blocked items are not safe to
+finalize because their package bodies may still be waiting on dependencies or
+queue throttling."
+  (let ((items (elpaca-q<-elpacas queue))
+        (terminal t))
+    (while items
+      (unless (memq (elpaca--status (cdr (pop items))) '(finished failed))
+        (setq terminal nil
+              items nil)))
+    terminal))
+
+(defun be/elpaca-finalize-inactive-batch-queues (&rest _)
+  "Finalize incomplete batch queues whose package items are terminal.
+This covers memory-constrained batch runs where queue throttling can leave a
+queue marked `incomplete' after its package items have finished."
+  (when be/batch-bootstrap
+    (dolist (queue elpaca--queues)
+      (when (and (eq (elpaca-q<-status queue) 'incomplete)
+                 (elpaca-q<-elpacas queue)
+                 (be/elpaca-queue-items-terminal-p queue))
+        (elpaca--finalize-queue queue)))))
+
+(when be/batch-bootstrap
+  (advice-add 'elpaca--expand-declaration
+              :around #'be/elpaca-expand-without-batch-wait)
+  (advice-add 'elpaca-process-queues
+              :after #'be/elpaca-finalize-inactive-batch-queues)
+  (advice-add 'elpaca--signal
+              :after #'be/elpaca-finalize-inactive-batch-queues))
 
 ;;; Populate elpaca queue with the packages that will process the config.
 ;; Install use-package support
@@ -118,24 +190,25 @@
 (setq load-prefer-newer t)
 
 ;; Ensure JIT compilation is enabled for improved performance by
-;; native-compiling loaded .elc files asynchronously
-(setq native-comp-jit-compilation t)
-(setq native-comp-deferred-compilation t) ; Deprecated in Emacs > 29.1
+;; native-compiling loaded .elc files asynchronously.
+(unless be/batch-bootstrap
+  (setq native-comp-jit-compilation t)
+  (setq native-comp-deferred-compilation t) ; Deprecated in Emacs > 29.1
 
-(use-package compile-angel
-  :delight compile-angel-on-load-mode
-  :delight compile-angel-on-save-mode
-  :delight compile-angel-on-save-local-mode
-  :config
-  ;; Set `compile-angel-verbose' to nil to silence compile-angel.
-  (setq compile-angel-verbose t)
+  (use-package compile-angel
+    :delight compile-angel-on-load-mode
+    :delight compile-angel-on-save-mode
+    :delight compile-angel-on-save-local-mode
+    :config
+    ;; Set `compile-angel-verbose' to nil to silence compile-angel.
+    (setq compile-angel-verbose t)
 
-  (compile-angel-on-load-mode)
-  (add-hook 'emacs-lisp-mode-hook #'compile-angel-on-save-local-mode))
+    (compile-angel-on-load-mode)
+    (add-hook 'emacs-lisp-mode-hook #'compile-angel-on-save-local-mode)))
 
 ;; Ensure that quitting only occurs once Emacs finishes native compiling,
 ;; preventing incomplete or leftover compilation files in `/tmp`.
-(setq native-comp-async-query-on-exit t)
+(setq native-comp-async-query-on-exit (not be/batch-bootstrap))
 (setq confirm-kill-processes t)
 
 ;; ;; Show buffer when there is a warning.
@@ -148,7 +221,7 @@
 ;; (setq native-comp-warning-on-missing-source t)
 
 ;; Non-nil means to native compile packages as part of their installation.
-(setq package-native-compile t)
+(setq package-native-compile (not be/batch-bootstrap))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
