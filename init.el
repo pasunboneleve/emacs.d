@@ -104,37 +104,9 @@ individual `:wait' orders.  The final explicit `elpaca-wait' handles the whole
 queue after all declarations have been read."
   (funcall fn (be/elpaca-drop-wait order) body))
 
-(defun be/elpaca-queue-items-terminal-p (queue)
-  "Return non-nil when every item in QUEUE has finished or failed.
-Elpaca also treats `blocked' as inactive, but blocked items are not safe to
-finalize because their package bodies may still be waiting on dependencies or
-queue throttling."
-  (let ((items (elpaca-q<-elpacas queue))
-        (terminal t))
-    (while items
-      (unless (memq (elpaca--status (cdr (pop items))) '(finished failed))
-        (setq terminal nil
-              items nil)))
-    terminal))
-
-(defun be/elpaca-finalize-inactive-batch-queues (&rest _)
-  "Finalize incomplete batch queues whose package items are terminal.
-This covers memory-constrained batch runs where queue throttling can leave a
-queue marked `incomplete' after its package items have finished."
-  (when be/batch-bootstrap
-    (dolist (queue elpaca--queues)
-      (when (and (eq (elpaca-q<-status queue) 'incomplete)
-                 (elpaca-q<-elpacas queue)
-                 (be/elpaca-queue-items-terminal-p queue))
-        (elpaca--finalize-queue queue)))))
-
 (when be/batch-bootstrap
   (advice-add 'elpaca--expand-declaration
-              :around #'be/elpaca-expand-without-batch-wait)
-  (advice-add 'elpaca-process-queues
-              :after #'be/elpaca-finalize-inactive-batch-queues)
-  (advice-add 'elpaca--signal
-              :after #'be/elpaca-finalize-inactive-batch-queues))
+              :around #'be/elpaca-expand-without-batch-wait))
 
 ;;; Populate elpaca queue with the packages that will process the config.
 ;; Install use-package support
