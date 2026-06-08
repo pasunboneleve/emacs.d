@@ -327,15 +327,15 @@
 (load-file (concat user-emacs-directory "mixins/languages/python-config.el"))
 
 ;; nix
-(use-package nix-mode
-  :after magit
-  :requires magit-section
-  :config
-  (add-to-list 'eglot-server-programs '(nix-mode . ("nil")))
-  :ensure-system-package (nil . "nix-env -i nil")
-  :hook
-  (nix-mode . eglot-ensure)
-  :mode "\\.nix\\'")
+;; (use-package nix-mode
+;;   :after magit
+;;   :requires magit-section
+;;   :config
+;;   (add-to-list 'eglot-server-programs '(nix-mode . ("nil")))
+;;   :ensure-system-package (nil . "nix-env -i nil")
+;;   :hook
+;;   (nix-mode . eglot-ensure)
+;;   :mode "\\.nix\\'")
 
 ;; Racket
 (use-package racket-mode
