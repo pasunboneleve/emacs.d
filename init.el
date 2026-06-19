@@ -118,11 +118,12 @@ queue after all declarations have been read."
 
 ;; Install system-packages
 (elpaca system-packages
-  ;; Let `:ensure-system-package' use TRAMP sudo when it really needs to
-  ;; install a missing dependency.  The password prompt stays in TRAMP/auth
+  ;; On Linux, let `:ensure-system-package' use TRAMP sudo when it really needs
+  ;; to install a missing dependency.  The password prompt stays in TRAMP/auth
   ;; handling rather than being passed through shell command text.
-  (setq system-packages-use-sudo t
-        system-packages-package-manager 'dnf
+  ;; On macOS, use brew without sudo to avoid Tramp connections to localhost.
+  (setq system-packages-use-sudo (not (eq system-type 'darwin))
+        system-packages-package-manager (if (eq system-type 'darwin) 'brew 'dnf)
         async-shell-command-buffer 'new-buffer))
 
 ;; Block until current queue processed.
