@@ -144,8 +144,11 @@ No key values are ever printed."
   :ensure-system-package
   ((cmake)
    (libtool)
-   (uv . python-uv)
-   (aider . "uv tool install --force --with-pip aider-chat@latest")))
+   (aider . "uv tool install --force --with-pip aider-chat@latest"))
+  :init
+  (unless (executable-find "uv")
+    (system-packages-install
+     (if (eq system-type 'darwin) "uv" "python-uv"))))
 
 (defun aidermacs-copy-clean-code (beg end)
   "Copy region and strip internal newlines (fake breaks)

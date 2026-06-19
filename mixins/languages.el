@@ -206,7 +206,10 @@
 (use-package go-mode
   :hook
   (go-mode . eglot-ensure)
-  :ensure-system-package ("/usr/bin/gopls" . golang-x-tools-gopls))
+  :init
+  (unless (executable-find "gopls")
+    (system-packages-install
+     (if (eq system-type 'darwin) "gopls" "golang-x-tools-gopls"))))
 
 ;; graphviz
 (use-package graphviz-dot-mode
@@ -390,7 +393,10 @@
   (helm-mode . eglot-ensure)
   :config
   (add-to-list 'eglot-server-programs '(helm-mode "helm_ls" "serve"))
-  :ensure-system-package (helm_ls . "nix-env -i helm-ls"))
+  :init
+  (unless (executable-find "helm_ls")
+    (system-packages-install
+     (if (eq system-type 'darwin) "helm-ls" "nix-env -i helm-ls"))))
 
 (define-derived-mode helm-mode yaml-mode "helm"
   "Major mode for editing kubernetes helm templates.")

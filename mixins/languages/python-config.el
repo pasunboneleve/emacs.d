@@ -15,7 +15,10 @@
   :hook
   (python . python-isort-on-save-mode)
   (python-ts-mode . python-isort-on-save-mode)
-  :ensure-system-package (isort . python3-isort))
+  :init
+  (unless (executable-find "isort")
+    (system-packages-install
+     (if (eq system-type 'darwin) "isort" "python3-isort"))))
 
 (use-package ruff-format
   :ensure (ruff-format
@@ -37,7 +40,7 @@
   :ensure nil
   :config
   (add-to-list 'eglot-server-programs
-               '((python-ts-mode . ("pyright-langserver" "--stdio"))))
+               '(python-ts-mode . ("pyright-langserver" "--stdio")))
   :hook
   (python-ts-mode . eglot-ensure))
 

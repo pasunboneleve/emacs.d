@@ -10,7 +10,7 @@
 (defvar +eglot/initialization-options-map (make-hash-table :size 5))
 
 (cl-defmethod eglot-initialization-options ((server eglot-lsp-server))
-  (if-let ((init-options (gethash (eglot--major-mode server) +eglot/initialization-options-map)))
+  (if-let ((init-options (gethash (car (eglot--major-modes server)) +eglot/initialization-options-map)))
       init-options
     eglot--{}))
 

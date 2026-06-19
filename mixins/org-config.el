@@ -57,7 +57,10 @@
         (("s-Y" . org-download-screenshot)
          ("s-y" . org-download-yank)))
   :custom (org-download-method 'attach)
-  :ensure-system-package wl-clipboard)
+  :init
+  (unless (eq system-type 'darwin)
+    (unless (executable-find "wl-copy")
+      (system-packages-install "wl-clipboard"))))
 
 ;; rest
 (use-package verb
