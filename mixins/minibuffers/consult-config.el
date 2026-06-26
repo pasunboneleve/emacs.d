@@ -54,9 +54,7 @@
          ("M-s L" . consult-line-multi))           ;; needed by consult-line to detect isearch
 
   ;; Enable automatic preview at point in the *Completions* buffer. This is
-  ;; relevant when you use the default completion UI. You may want to also
-  ;; enable `consult-preview-at-point-mode` in Embark Collect buffers.
-  :hook (completion-list-mode . consult-preview-at-point-mode)
+  ;; relevant when you use the default completion UI.
 
   ;; The :init configuration is always executed (Not lazy)
   :init
@@ -130,8 +128,6 @@
   (setq consult-gh-default-clone-directory "~/src/vendor/"))
 
 (use-package embark
-  :ensure t
-
   :bind
   (("C-." . embark-act)         ;; pick some comfortable binding
    ("C-;" . embark-dwim)        ;; good alternative: M-.
@@ -152,9 +148,7 @@
 
 ;; Consult users will also want the embark-consult package.
 (use-package embark-consult
-  :ensure t ; only need to install it, embark loads it after consult if found
-  :hook
-  (embark-collect-mode . consult-preview-at-point-mode))
+  :after (embark consult))
 
 (use-package consult-eglot)
 
