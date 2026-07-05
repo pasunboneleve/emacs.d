@@ -124,6 +124,7 @@ queue after all declarations have been read."
   ;; On macOS, use brew without sudo to avoid Tramp connections to localhost.
   (setq system-packages-use-sudo (not (eq system-type 'darwin))
         system-packages-package-manager (if (eq system-type 'darwin) 'brew 'dnf)
+        system-packages-noconfirm (not (eq system-type 'darwin))
         async-shell-command-buffer 'new-buffer))
 
 ;; Block until current queue processed.
