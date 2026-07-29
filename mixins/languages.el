@@ -460,6 +460,9 @@
 
 ;; typst
 
+(with-eval-after-load 'treesit
+  (add-to-list 'treesit-language-source-alist
+               '(typst "https://github.com/uben0/tree-sitter-typst")))
 (use-package typst-ts-mode
   :config
   (add-to-list 'eglot-server-programs
