@@ -259,7 +259,7 @@
 (global-set-key "\C-c\C-zv" 'browse-url-of-file)
 
 ;; set browser
-(setq browse-url-browser-function 'browse-url-chromium)
+(setq browse-url-browser-function 'browse-url-default-browser)
 
 ;; google stuff
 (use-package google-this)
