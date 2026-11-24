@@ -24,6 +24,10 @@
 ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; These limits apply to GUI, daemon, and batch startup alike.
+(setq elpaca-queue-limit 2
+      native-comp-async-jobs-number 1)
+
 (defconst be/batch-bootstrap
   (and noninteractive
        (string= (getenv "NATIVE_DISABLED") "1"))
@@ -38,6 +42,25 @@
 
 (when be/batch-bootstrap
   (be/disable-native-compilation-for-batch-bootstrap))
+
+(when (< emacs-major-version 29)
+  (error "This configuration requires Emacs 29 or newer"))
+(require 'cl-lib)
+(require 'subr-x)
+(setq load-prefer-newer t)
+(add-to-list 'load-path (expand-file-name "local-packages" user-emacs-directory))
+(require 'be-git)
+(require 'be-system)
+(require 'be-lazy)
+(require 'be-assets)
+(require 'be-secrets)
+(require 'be-packages)
+
+;; GUI launches on macOS do not inherit the shell's PATH.
+(dolist (directory '("/opt/homebrew/bin" "/usr/local/bin" "~/go/bin" "~/.local/bin" "~/.cargo/bin"))
+  (let ((path (expand-file-name directory)))
+    (add-to-list 'exec-path path)
+    (setenv "PATH" (concat path path-separator (getenv "PATH")))))
 
 ;;; bootstrap elpaca
 (defvar elpaca-installer-version 0.12)
@@ -58,10 +81,12 @@
     (when (< emacs-major-version 28) (require 'subr-x))
     (condition-case-unless-debug err
         (if-let ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
-                 ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
+                 ((zerop (apply #'be/with-git-urls
+                                (list (be/git-url (plist-get order :repo))) #'call-process
+                                `("git" nil ,buffer t "clone"
                                                  ,@(when-let ((depth (plist-get order :depth)))
                                                      (list (format "--depth=%d" depth) "--no-single-branch"))
-                                                 ,(plist-get order :repo) ,repo))))
+                                                 ,(be/git-url (plist-get order :repo)) ,repo))))
                  ((zerop (call-process "git" nil buffer t "checkout"
                                        (or (plist-get order :ref) "--"))))
                  (emacs (concat invocation-directory invocation-name))
@@ -76,6 +101,14 @@
     (require 'elpaca)
     (elpaca-generate-autoloads "elpaca" repo)
     (load "./elpaca-autoloads")))
+(be/git-setup)
+;; Package editing rarely needs complete repository histories.
+(setq elpaca-order-defaults (plist-put elpaca-order-defaults :depth 1))
+(advice-add 'elpaca--make-process :around #'be/with-build-limits)
+;; A failed order frees a slot just as a finished order does.
+(elpaca-subscribe 'failed #'elpaca--release-throttled)
+(elpaca-subscribe 'finished #'be/restore-lazy-modes)
+(add-hook 'elpaca-recipe-functions #'be/package-compatibility)
 (add-hook 'after-init-hook #'elpaca-process-queues)
 (elpaca `(,@elpaca-order))
 
@@ -116,19 +149,31 @@ queue after all declarations have been read."
   ;; Assume :ensure t unless otherwise specified.
   (setq use-package-always-ensure t))
 
-;; Install system-packages
-(elpaca system-packages
-  ;; On Linux, let `:ensure-system-package' use TRAMP sudo when it really needs
-  ;; to install a missing dependency.  The password prompt stays in TRAMP/auth
-  ;; handling rather than being passed through shell command text.
-  ;; On macOS, use brew without sudo to avoid Tramp connections to localhost.
-  (setq system-packages-use-sudo (not (eq system-type 'darwin))
-        system-packages-package-manager (if (eq system-type 'darwin) 'brew 'dnf)
-        system-packages-noconfirm (not (eq system-type 'darwin))
-        async-shell-command-buffer 'new-buffer))
-
 ;; Block until current queue processed.
 (elpaca-wait)
+(be/system-setup)
+
+;; Upgrade separately distributed built-ins before consumers can load them.
+;; Emacs itself remains a strict dependency: compat cannot emulate a newer C core.
+(setq elpaca-ignored-dependencies
+      (seq-difference elpaca-ignored-dependencies
+                      '(compat transient seq map project xref eldoc eglot flymake jsonrpc
+                        external-completion refactor track-changes)))
+;; These standalone GNU releases have no usable recipe in Elpaca's menu.
+;; Their release archives avoid cloning all of Emacs for two small libraries.
+(elpaca (external-completion :inherit nil :type tar
+                             :url "https://elpa.gnu.org/packages/external-completion.tar"))
+(elpaca (refactor :inherit nil :type tar
+                  :url "https://elpa.gnu.org/packages/refactor.tar"))
+(dolist (package '(compat transient seq map project xref eldoc eglot flymake jsonrpc))
+  (eval `(elpaca ,package)))
+(when (< emacs-major-version 30)
+  (elpaca which-key))
+(elpaca-wait)
+;; Early bootstrap may have loaded bundled libraries before their upgrades.
+(dolist (library '(seq map eldoc project xref flymake jsonrpc))
+  (when (featurep library)
+    (load (locate-library (symbol-name library)) nil 'nomessage)))
 
 (use-package delight
   :ensure (:wait t)
@@ -140,15 +185,7 @@ queue after all declarations have been read."
 
 (use-package compat
   :ensure (:wait t)
-  :demand t
-  :config
-  (require 'compat-31))
-
-;; Let Elpaca install newer versions of bundled packages when the bundled
-;; versions are already known to lag current dependency requirements.
-(setq elpaca-ignored-dependencies
-      (seq-difference elpaca-ignored-dependencies
-                      '(compat transient)))
+  :demand t)
 
 ;; add modules within this directory to the scope
 (add-to-list 'load-path
@@ -266,9 +303,9 @@ queue after all declarations have been read."
 ;; t is True, nil is False. If you're copy-pasting 1 or -1,
 ;; these are also truthy and falsy values, respectively.
 (setq inhibit-startup-message t)
-(scroll-bar-mode -1)
+(when (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
 (menu-bar-mode -1)
-(tool-bar-mode -1)
+(when (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 
 
 ;; Proportional window resizing
@@ -324,23 +361,11 @@ queue after all declarations have been read."
 ;;; I want to work on the file, not the backup
 (setq backup-by-copying t)
 
-;; Keep customisations out of my config
-(setq custom-file (concat user-emacs-directory "custom.el.gpg"))
-
-;; Theme trust is part of this config.  Do not prompt on every new machine when
-;; Custom or package setup activates a configured theme during startup.
-(setq custom-safe-themes t)
-
-(defun be/load-optional-user-file (file)
-  "Load FILE, warning instead of aborting when local secrets are unavailable."
-  (condition-case err
-      (load file t nil nil t)
-    (file-error
-     (display-warning
-      'user-init-file
-      (format "Skipping %s: %s" file (error-message-string err))
-      :warning))))
-
+;; Local Custom remains encrypted and is never tracked.
+(setq custom-file (expand-file-name "custom-local.el.gpg" user-emacs-directory)
+      custom-safe-themes t)
+(be/setup-encryption)
+(be/load-optional-user-file (expand-file-name "custom.el.gpg" user-emacs-directory))
 (be/load-optional-user-file custom-file)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -502,7 +527,7 @@ queue after all declarations have been read."
 (defun my-maximized-frame-layout ()
   "Make Emacs frame use all the screen area."
   (progn
-    (scroll-bar-mode -1)
+    (when (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
     (split-window-horizontally)
     (when (fboundp 'treemacs)
       (unless (and (fboundp 'treemacs-current-visibility)
@@ -679,22 +704,40 @@ queue after all declarations have been read."
 (load-file (concat user-emacs-directory "mixins/languages.el"))
 
 ;; File viewers
-(load-file (concat user-emacs-directory "mixins/viewers.el"))
+(be/lazy-mode be/pdf-mode "\\.pdf\\'" "mixins/viewers.el" pdf-view-mode nil doc-view-mode)
+(be/lazy-mode be/epub-mode "\\.epub\\'" "mixins/viewers.el" nov-mode)
 
 ;; Minibuffer & popups
 (load-file (concat user-emacs-directory "mixins/minibuffers.el"))
 
 ;; Artificial Intelligence
-(load-file (concat user-emacs-directory "mixins/ai.el"))
+(be/lazy-command be/agent-shell "mixins/ai.el" agent-shell)
+(be/lazy-command be/agent-shell-sidebar "mixins/ai.el" agent-shell-sidebar-toggle)
+(be/lazy-command be/agent-region "mixins/ai.el" agent-shell-send-region)
+(be/lazy-command be/agent-file "mixins/ai.el" agent-shell-send-file)
+(be/lazy-command be/agent-other-file "mixins/ai.el" agent-shell-send-other-file)
+(be/lazy-command be/agent-current-file "mixins/ai.el" agent-shell-send-current-file)
+(be/lazy-command be/codex "mixins/ai.el" codex-ide-menu)
+(be/lazy-command be/aider "mixins/ai.el" aidermacs-transient-menu)
+(global-set-key (kbd "C-c a") #'be/aider)
+(be/lazy-command be/gptel "mixins/ai.el" gptel)
+(global-set-key (kbd "C-c C-;") #'be/codex)
+(global-set-key (kbd "C-c M-a a") #'be/agent-shell-sidebar)
+(global-set-key (kbd "C-c M-a r") #'be/agent-region)
+(global-set-key (kbd "C-c M-a f") #'be/agent-file)
+(global-set-key (kbd "C-c M-a o") #'be/agent-other-file)
+(global-set-key (kbd "C-c M-a c") #'be/agent-current-file)
 
 ;; Entertainment
-(load-file (concat user-emacs-directory "mixins/entertainment.el"))
+(be/lazy-command be/music "mixins/entertainment.el" emms)
 
 ;; Email and internet messaging
 (be/load-optional-user-file (concat user-emacs-directory "mixins/communication.el.gpg"))
 
 ;; Orgmode
-(load (concat user-emacs-directory "mixins/org-config.el"))
+(add-hook 'org-mode-hook (lambda () (be/load-module "mixins/org-config.el")))
+(be/lazy-command be/org-agenda "mixins/org-config.el" org-agenda)
+(be/lazy-command be/org-capture "mixins/org-config.el" org-capture)
 
 ;; Tramp
 (load (concat user-emacs-directory "mixins/tramp-config.el"))

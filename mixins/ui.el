@@ -4,7 +4,7 @@
 ;;; Code:
 
 ;; Stop annoying warnings I don't intent to investigate
-(setq warning-minimum-level :error)
+(setq warning-minimum-level :warning)
 
 ;; Don't duplicate eldoc output in minibuffer if
 ;; I'm using the eldoc-doc-buffer.
@@ -185,3 +185,6 @@
 
 (provide 'ui)
 ;;; ui.el ends here.
+
+(add-hook 'after-make-frame-functions #'be/ensure-icon-fonts)
+(add-hook 'elpaca-after-init-hook #'be/ensure-icon-fonts)

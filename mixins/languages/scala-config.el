@@ -13,7 +13,7 @@
   :init (add-to-list 'project-vc-extra-root-markers "build.sbt")
   :hook
   (scala-mode . envrc-mode)
-  (scala-mode . eglot-ensure))
+  (scala-mode . be/eglot-ensure))
 ;; :init
 ;; (setq-local eglot-workspace-configuration
 ;;             '((metals (scalafmt-config-path (".scalafmt.conf"))))

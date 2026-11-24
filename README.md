@@ -1,115 +1,38 @@
 # emacs.d
 
-A reproducible Emacs configuration focused on fast navigation, code
-exploration, and architecture workflows — structured to minimise
-state, reduce boilerplate, and avoid config bankruptcy.
+A personal [Emacs](https://www.gnu.org/software/emacs/) configuration for
+Emacs 29 and newer, with everyday UI at startup and language tools installed
+on first use. It supports [Ubuntu](https://ubuntu.com/),
+[Fedora](https://fedoraproject.org/), and macOS with [Homebrew](https://brew.sh/).
 
-## Why this exists
+The configuration stays in ordinary Lisp files: `init.el` handles startup,
+`mixins/` contains feature configuration, and `local-packages/be-*.el` owns
+the few shared installation helpers. Eglot provides language-server support.
 
-Most Emacs configs start simple and slowly collapse under their own
-weight.
+## Start
 
-Packages accumulate. State leaks. Startup slows down. Changes become
-risky.
+Clone this repository into your Emacs configuration directory and start Emacs.
+Git and Emacs must already be installed. The first startup downloads the UI
+packages; the first visit to a language file installs its editing packages.
+System package installation may request sudo authentication.
 
-This configuration is built to stay maintainable over time:
+Public Git downloads prefer authenticated SSH and fall back to HTTPS.
+Missing private keys leave encrypted configuration files intact and skipped.
+New local secrets use a machine-local encryption key created when necessary.
 
-- minimal implicit state
-- clear module boundaries
-- reproducible across machines
-- explicit handling of private configuration
+See [docs/setup.md](docs/setup.md) for installation behavior, key handling,
+first-use commands, and recovery.
 
-No rewrites. No “start over from scratch”. No config bankruptcy.
+## Validate
 
-## Architecture
-
-This is not a framework (like
-[Doom](https://github.com/doomemacs/doomemacs) or
-[Spacemacs](https://github.com/syl20bnr/spacemacs)). It’s a **core +
-mixins** system.
-
-- `early-init.el`: startup hygiene (GC, package disabling, secrets, no
-  flicker)
-- `init.el`: bootstrap (elpaca, use-package, defaults, global
-  behaviour)
-- `mixins/`: domain-specific modules loaded in order
-
-Each mixin owns a concern:
-
-- `ui.el` — usability and presentation
-- `dev.el` — editing, navigation, version control, shells
-- `languages.el` — language support orchestration (LSP/eglot +
-  per-language modules)
-- `minibuffers.el` — completion stack (vertico, consult, corfu, etc.)
-- `ai.el` — AI-assisted workflows (local + API-backed)
-- `viewers.el`, `org-config.el`, `tramp-config.el`, etc.
-
-Private behaviour is isolated into encrypted modules:
-- `safe.el.gpg`
-- `communication.el.gpg`
-
-## Key ideas
-
-- **State is the enemy** Everything is structured to minimise hidden
-  state and side effects.
-
-- **Modules over sprawl** Features live in mixins, not scattered
-  across init files.
-
-- **System dependencies are explicit** External tools and language
-  servers are part of the design (`system-packages`).
-
-- **Mixed LSP strategy** Uses `eglot` or `lsp-mode` depending on
-  ecosystem maturity.
-
-- **Private config is first-class** Secrets and personal behaviour are
-  separated via GPG, not commented hacks.
-
-## Installation
-
-```bash
-git clone <repo> ~/.emacs.d
+```sh
+emacs -Q --batch -l tests/check-lisp.el
+emacs -Q --batch -l tests/portability-tests.el -f ert-run-tests-batch-and-exit
+emacs -Q --batch -l tests/secrets-integration.el -f ert-run-tests-batch-and-exit
 ```
 
-If you don’t use encrypted modules, comment out `.gpg` loads in
-`init.el`.
+The encryption test uses disposable keyrings. See
+[docs/setup.md](docs/setup.md) for isolated bootstrap validation.
 
-## Environment
-
-Tested on:
-
-* Emacs 30
-* Fedora Linux (GNOME, Wayland)
-
-Other systems should work with minor adjustments (notably
-`system-packages`).
-
-## Fonts
-
-Install a Nerd Font (e.g. Inconsolata Nerd Font) for icons:
-
-```elisp
-M-x nerd-icons-install-fonts
-```
-
-## Non-goals
-
-* This is not a drop-in distro
-* This is not beginner-oriented
-* This is not “everything included”
-
-It’s a **maintainable personal system** you can adapt and evolve.
-
-## Acknowledgements
-
-This configuration builds on ideas from:
-
-- [Mastering Emacs](https://www.masteringemacs.org/book)
-- [Bedrock Emacs](https://github.com/ashton314/emacs-bedrock)
-
-The overall structure — particularly the use of a `mixins/` directory
-and a disciplined `use-package`-driven setup — is inspired by Bedrock.
-
-This repository extends that foundation into a full, everyday system
-with additional modules, system-level dependency management,
-AI-assisted workflows, and reproducibility across machines.
+The mixin structure draws on [Bedrock](https://github.com/ashton314/emacs-bedrock)
+and [Mastering Emacs](https://www.masteringemacs.org/).

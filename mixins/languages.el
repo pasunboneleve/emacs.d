@@ -1,484 +1,102 @@
-;;; languages.el --- Summary  -*- lexical-binding: t; -*-
+;;; languages.el --- Language entry points -*- lexical-binding: t; -*-
 ;;; Commentary:
-;;; Programming language support -- LSP and individual languages.
+;; This file registers entry points.  Package declarations live in language files.
 ;;; Code:
+(require 'be-lazy)
 
-;;; formatter
-
-(use-package apheleia
-  :bind ("C-c t a" . apheleia-mode)
-  ;; :hook
-  ;; (apheleia-mode . (lambda () (indent-tabs-mode -1)))
-  :config
-  ;; Set custom formatting commands
-  (dolist (formatter-cmd
-           '((shfmt . ("shfmt" "-i" "2" "-ci" "-sr"))
-             (bun . ("bun" "format" (or (buffer-file-name) (buffer-name))))))
-
-    (add-to-list apheleia-formatters formatter-cmd))
-
-  ;; Set custom formatters for modes
-  (dolist (formatter-mode '((emacs-lisp-mode . lisp-indent)))
-    ;; (tsx-ts-mode . prettier)
-    ;; (typescript-mode . prettier)
-    ;; (typescript-ts-mode . prettier)
-
-
-    (add-to-list apheleia-mode-alist formatter-mode))
-  :ensure-system-package ((shfmt) (bun)))
-
-;;; LSP
+(be/lazy-command be/apheleia-mode "mixins/formatting.el" apheleia-mode)
+(global-set-key (kbd "C-c t a") #'be/apheleia-mode)
 
 (use-package eglot
   :ensure nil
-  :after eldoc
   :custom
   (eglot-autoshutdown t)
   (eglot-confirm-server-initiated-edits t)
-  (eglot-sync-connect nil)) ; don't block while connecting to server
+  (eglot-sync-connect nil))
 
-(use-package eglot-booster
-  :ensure (eglot-booster :host github :repo "jdtsmith/eglot-booster")
-  :after eglot
-  :config
-  (eglot-booster-mode)
-  :ensure-system-package
-  (emacs-lsp-booster . "cargo install emacs-lsp-booster"))
+(defconst be/language-tools
+  '(((python-mode python-ts-mode) . pyright-langserver)
+    ((js-mode js-ts-mode jtsx-jsx-mode jtsx-tsx-mode jtsx-typescript-mode)
+     . typescript-language-server)
+    ((go-mode go-ts-mode) . gopls)
+    ((rust-mode rust-ts-mode rustic-mode) . rust-analyzer)
+    ((terraform-mode) . terraform-ls)
+    ((helm-mode) . helm_ls)
+    ((typst-ts-mode) . tinymist))
+  "Servers which can be provisioned automatically for Eglot.")
 
-;; ein
-(use-package ein)
-;; jupyter installation (with Rust repl)
-;;
-;; python -m venv .venv
-;; source .venv/bin/activate
-;; pip install jupyterlab
-;; cargo install evcxr_jupyter
-;; evcxr_jupyter --install
+(defun be/eglot-ensure ()
+  "Start Eglot only after its configured language server is available."
+  (unless (file-remote-p default-directory)
+    (let ((tool (cdr (cl-find-if (lambda (entry) (memq major-mode (car entry)))
+                               be/language-tools))))
+      (when (or (null tool) (be/ensure-tool tool))
+        (condition-case err
+            (eglot-ensure)
+          (error (display-warning 'eglot (error-message-string err) :warning)))))))
 
-;;; languages
+;; Built-in editing needs no language package downloads.
+(add-hook 'emacs-lisp-mode-hook #'flymake-mode)
+(defun be/parinfer-mode ()
+  "Enable structural Lisp editing when its optional package is available."
+  (interactive)
+  (condition-case err
+      (progn
+        (be/load-module "mixins/languages/elisp-config.el")
+        (parinfer-rust-mode 1))
+    (error (display-warning 'be-lazy (error-message-string err) :warning))))
+(add-hook 'emacs-lisp-mode-hook #'be/parinfer-mode)
+(add-to-list 'auto-mode-alist '("\\.avdl\\'" . avro-mode))
+(autoload 'avro-mode "avro-mode" nil t)
+(add-to-list 'auto-mode-alist '("\\.tq\\'" . technique-mode))
+(autoload 'technique-mode "technique-mode" nil t)
+(add-to-list 'auto-mode-alist '("\\.\\(?:ini\\|lock\\|service\\|desktop\\)\\'" . conf-mode))
 
-;; needs to be installed with `cargo install harper-ls'
-;; this is a nice way of checking grammar with LSP (eglot)
-(with-eval-after-load 'eglot
-  (setf (alist-get '(markdown-mode gfm-mode org-mode text-mode)
-                   eglot-server-programs nil nil #'equal)
-        '("harper-ls" "--stdio")))
-
-(setq-default eglot-workspace-configuration
-              '(:harper-ls
-                (:dialect "Australian"
-                 :linters
-                 (:SpellCheck t
-                  :UseTitleCase :json-false))))
-
-(use-package avro-mode
-  :ensure nil
-  :custom
-  (tab-width 4)
-  :mode "\\.avdl$")
-
-(use-package technique-mode
-  :ensure nil
-  :custom
-  (tab-width 4)
-  :mode "\\.tq$")
-
-;; ini files
-(use-package conf-mode
-  :ensure nil
-  :mode "\\.ini\\'\\|\\.lock\\'\\|\\.service\\'\\|\\.desktop\\'")
-
-;; csv files
-(load-file (concat user-emacs-directory "mixins/languages/csv-config.el"))
-
-;;; C# / OmniSharp / Eglot
-;;
-;; Fedora install notes:
-;;
-;; 1. Install the .NET SDK.
-;;
-;;    Fedora packages .NET directly. Microsoft’s Fedora instructions show:
-;;
-;;      sudo dnf install dotnet-sdk-8.0
-;;
-;;    Fedora’s own developer docs also use the generic form:
-;;
-;;      sudo dnf install dotnet-sdk-x.y
-;;
-;;    For example:
-;;
-;;      sudo dnf install dotnet-sdk-9.0
-;;
-;;    Check with:
-;;
-;;      dotnet --info
-;;
-;;    The SDK is needed, not just the runtime, because OmniSharp/Roslyn needs
-;;    project-loading/build metadata for semantic diagnostics and completion.
-;;
-;; 2. Install OmniSharp Roslyn, preferably the net6.0 Linux build.
-;;
-;;      mkdir -p ~/.local/opt/omnisharp
-;;      cd ~/.local/opt/omnisharp
-;;
-;;      curl -L -o omnisharp-linux-x64-net6.0.tar.gz \
-;;        https://github.com/OmniSharp/omnisharp-roslyn/releases/latest/download/omnisharp-linux-x64-net6.0.tar.gz
-;;
-;;      tar -xzf omnisharp-linux-x64-net6.0.tar.gz
-;;
-;;    The OmniSharp README says the net6.0 build requires .NET SDK >= 6.0.
-;;    Avoid the old Mono/net472 build on Fedora unless necessary; it may start
-;;    but fail to discover/load MSBuild correctly.
-;;
-;; 3. Add a small wrapper on PATH.
-;;
-;;      mkdir -p ~/.local/bin
-;;
-;;      cat > ~/.local/bin/omnisharp <<'EOF'
-;;      #!/usr/bin/env bash
-;;      exec dotnet "$HOME/.local/opt/omnisharp/OmniSharp.dll" "$@"
-;;      EOF
-;;
-;;      chmod +x ~/.local/bin/omnisharp
-;;
-;;    Test with:
-;;
-;;      which omnisharp
-;;      omnisharp -lsp -s /tmp/some-dotnet-project
-;;
-;; 4. Smoke-test a project.
-;;
-;;      cd /tmp
-;;      dotnet new console -n EglotCsharpSmoke
-;;      cd EglotCsharpSmoke
-;;      dotnet restore
-;;      dotnet build
-;;      emacs Program.cs
-;;
-;;    In Program.cs, add:
-;;
-;;      ThisDefinitelyDoesNotExist();
-;;
-;;    `dotnet build` should report CS0103. Eglot/Flymake should eventually
-;;    report the same semantic diagnostic. If Flymake works only for syntax
-;;    errors but not CS0103, OmniSharp probably has not loaded the .csproj.
-;;
-;; Why this Eglot entry is a lambda:
-;;
-;; A static entry like:
-;;
-;;   '((csharp-mode csharp-ts-mode) "omnisharp" "-lsp")
-;;
-;; can start OmniSharp successfully while still failing to load the actual
-;; project. In that state Eglot reports success, but hover/completion/semantic
-;; diagnostics are mostly absent.
-;;
-;; Passing `-s PROJECT-ROOT` is the important part. It forces OmniSharp to load
-;; the .csproj/.sln for the buffer’s Eglot project.
-
-(use-package csharp-mode
- :ensure nil
- :hook (csharp-mode . eglot-ensure)
- :config
- (add-to-list 'major-mode-remap-alist '(csharp-mode . csharp-ts-mode))
- (with-eval-after-load 'eglot
-   (add-to-list 'eglot-server-programs
-                `((csharp-mode csharp-ts-mode)
-                  . ,(lambda (_interactive project)
-                       ;; OmniSharp may start from the wrapper's cwd.
-                       ;; Force the actual project root so it loads the .csproj/.sln.
-                      (list "omnisharp" "-lsp" "-s" (project-root project)))))))
-
-(use-package csproj-mode
-  :mode ("\\.csproj\\'" . csproj-mode))
-
-;; Dhall
-(use-package dhall-mode
-  :mode "\\.dhall\\'")
-
-(use-package dockerfile-mode)
-
-;; elm
-(use-package elm-mode
-  :hook (elm-mode . eglot-ensure))
-
-;; go
-(use-package go-mode
-  :hook
-  (go-mode . eglot-ensure)
-  :init
-  (unless (executable-find "gopls")
-    (system-packages-install
-     (if (eq system-type 'darwin) "gopls" "golang-x-tools-gopls"))))
-
-;; graphviz
-(use-package graphviz-dot-mode
-  :custom
-  (graphviz-dot-mode-indent-width 2)
-  (graphviz-dot-auto-indent-on-semi t)
-  (graphviz-dot-preview-extension "png")
-  :config
-  (with-eval-after-load 'markdown-mode
-   (require 'markdown-mermaid)
-   (define-key markdown-mode-map (kbd "C-c C-c") #'markdown-mermaid-preview))
-  :mode ("\\.dot\\'" "\\.gv\\'")
-  :bind (:map graphviz-dot-mode-map
-              ("C-c p" . graphviz-dot-preview)))
-
-;; mermaid
-(use-package markdown-mermaid
-  :ensure (markdown-mermaid :type git :host github :repo "pasunboneleve/markdown-mermaid")
-  :bind (:map markdown-mode-map
-              ("C-c m" . markdown-mermaid-preview)))
-
-;; handlebars
-(use-package handlebars-mode)
-
-;; Haskell
-(load-file (concat user-emacs-directory "mixins/languages/haskell-config.el"))
-
-;; JSON
-(add-to-list 'major-mode-remap-alist '(json-mode . json-ts-mode))
-(use-package json-ts-mode
-  :ensure nil
-  :mode "\\.tfstate\\|\\.lock\\|\\.json\\|\\.jshintrc\\'"
-  :interpreter "json-ts-mode"
-  :custom (js-indent-level 2))
-
-;; java
-(load-file (concat user-emacs-directory "mixins/languages/java-config.el"))
-
-;;; javascript & web
-(load-file (concat user-emacs-directory "mixins/languages/web-config.el"))
-
-;; Gherkin
-(use-package pickle
-  :mode "\\.feature\\'"
-  :interpreter "pickle-mode")
-
-;; Lisp
-(use-package emacs-lisp-mode
-  :ensure nil
-  :mode "\\.el\\'"
-  :hook
-  (emacs-lisp-mode . flymake-mode)
-  (lisp-mode . aggressive-indent-mode))
-
-(use-package lisp-mode
-  :after rainbow-delimiters-mode
-  :ensure nil
-  :mode "\\.cl\\|\\.lisp\\'"
-  :hook
-  (lisp-mode . rainbow-delimiters-mode)
-  (lisp-interaction-mode . rainbow-delimiters-mode))
-
-(use-package sly
-  :init
-  (setq inferior-lisp-program "sbcl")
-  :hook
-  (sly-mode . rainbow-delimiters-mode)
-  (sly-mode . electric-pair-mode)
-  :bind (:map sly-prefix-map
-         ("M-h" . sly-documentation-lookup))
-  :ensure-system-package sbcl)
-
-;; elpaca can't build track-changes, which is a dependency
-(use-package parinfer-rust-mode
-  :delight
-  :custom
-  (parinfer-rust-troublesome-modes ;; removed electric-pair-mode from list
-   '(hungry-delete-mode global-hungry-delete-mode))
-  (parinfer-rust-auto-download t)
-  (electric-pair-local-mode -1)
-  (parinfer-rust-preferred-mode "paren")
-  :hook
-  (emacs-lisp-mode
-   ielm-mode
-   lisp-mode
-   slime-repl-mode
-   lisp-interaction-mode
-   racket-mode)
-  (before-save . delete-trailing-whitespace))
-
-;; Markdown
-(use-package markdown-mode
-  :hook
-  (markdown-mode . display-line-numbers-mode)
-  (markdown-mode . auto-fill-mode)
-  (markdown-mode . display-line-numbers-mode)
-  :mode "\\.md$\\|\\.markdown\\|\\.udon$"
-  :interpreter "markdown-mode"
-  :hook flyspell)
-
-(use-package markdown-mermaid
-  :ensure nil                    ; It is a local file, not a package
-  :after markdown-mode           ; Load this only after markdown-mode loads
-  :bind (:map markdown-mode-map  ; Bind this key specifically in markdown buffers
-              ("C-c m" . markdown-mermaid-preview)))
-
-(use-package mermaid-mode
-  :ensure t
-  :defer t
-  :mode ("\\.mmd\\'" . mermaid-mode) ;; Load for standalone .mmd files
-  :init
-  ;; Crucial: Tell markdown-mode to use mermaid-mode for coloring
-  ;; inside ```mermaid ... ``` blocks.
-  (with-eval-after-load 'markdown-mode
-    (add-to-list 'markdown-code-lang-modes '("mermaid" . mermaid-mode))))
-
-;; Python
-(load-file (concat user-emacs-directory "mixins/languages/python-config.el"))
-
-;; nix
-;; (use-package nix-mode
-;;   :after magit
-;;   :requires magit-section
-;;   :config
-;;   (add-to-list 'eglot-server-programs '(nix-mode . ("nil")))
-;;   :ensure-system-package (nil . "nix-env -i nil")
-;;   :hook
-;;   (nix-mode . eglot-ensure)
-;;   :mode "\\.nix\\'")
-
-;; Racket
-(use-package racket-mode
-  :mode "\\.rkt\\'"
-  :interpreter "racket-mode")
-
-;; Rust
-(use-package rust-mode
-  :ensure t
-  :custom
-  (rust-mode-treesitter-derive t))
-
-(use-package rustic
-  :after (rust-mode)
-  :config
-  (setq rustic-format-on-save t)
-  :custom
-  (rustic-lsp-client 'eglot)
-  (rustic-cargo-use-last-stored-arguments t)
-  :ensure-system-package (rustup))
-
-;; scala
-(load-file (concat user-emacs-directory "mixins/languages/scala-config.el"))
-
-(use-package sh-script
-  :ensure nil
-  :mode (("\\.zsh\\'" . sh-mode)
-         ("\\.sh\\'" . sh-mode)
-         ("zshrc\\'" . sh-mode)
-         ("zshenv\\'" . sh-mode))
-  :bind (:map sh-mode-map
-              ("C-c C-e" . sh-execute-region))
-  :custom (sh-basic-offset 2))
-
-(use-package theta-mode
-  :ensure (theta-mode
-           :host github
-           :repo "target/theta-idl"
-           :branch "stage"
-           :files ("emacs/theta-mode.el"))
-  :mode ("\\.theta\\'" . theta-mode))
-
-(use-package yaml-pro
-  :after yaml-mode)
-(use-package yaml-mode
-  :mode (("\\.yaml\\'" . yaml-mode)
-         ("\\.yml\\'" . yaml-mode)
-         ("user-data\\'" . yaml-mode)
-         ("\\.kubeconfig\\'" . yaml-mode))
-  :hook
-  (yaml-mode . yaml-pro-mode)
-  (helm-mode . eglot-ensure)
-  :config
-  (add-to-list 'eglot-server-programs '(helm-mode "helm_ls" "serve"))
-  :init
-  (unless (executable-find "helm_ls")
-    (system-packages-install
-     (if (eq system-type 'darwin) "helm-ls" "nix-env -i helm-ls"))))
-
-(define-derived-mode helm-mode yaml-mode "helm"
-  "Major mode for editing kubernetes helm templates.")
-
-
-(use-package terraform-mode
-  :config
-  (add-to-list 'eglot-server-programs '(terraform-mode . ("terraform-ls")))
-  :hook
-  (terraform-mode . eglot-ensure)
-  :ensure-system-package terraform-ls)
-
-(use-package udev-mode)
-
-;;; To use the hoon lsp server, build it from
-;;; https://github.com/bct/hoon-language-server/tree/fix-issue-30
-;;; and install it via [nvm](https://github.com/nvm-sh/nvm).
-
-;;; Point to your planet with the right credentials, of course.
-
-(use-package hoon-mode
-  :ensure (hoon-mode
-           :host github
-           :protocol ssh
-           :repo "dmvianna/hoon-mode.el"
-           :branch "dev"
-           :files (:defaults "*.json"))
-  :custom
-  (hoon-lsp-enable nil)
-  (hoon-lsp-code "lidlut-tabwed-pillex-ridrup")
-  (hoon-lsp-planet "zod")
-  (hoon-lsp-port "8080")
-  :bind (:map hoon-mode-map
-              ("C-c r" . hoon-eval-region-in-herb)
-              ("C-c b" . hoon-eval-buffer-in-herb))
-  :hook
-  (hoon-mode . eldoc-box-hover-mode))
-  ;;; This won't work, eglot-code-action-organize-imports must know
-  ;;; where the import lines are (they're not at line 1)
-;; (hoon-mode . (lambda ()
-;;                (add-hook 'before-save-hook
-;;                          (apply-partially #'eglot-code-action-organize-imports 1)
-;;                          nil 'local)))
-
-(use-package hoon-ts-mode
-  :after combobulate
-  :ensure (hoon-ts-mode
-           :host github
-           :repo "urbit-pilled/hoon-ts-mode")
-  :custom
-  (treesit-font-lock-level 4)
-  :init
-  (add-to-list 'combobulate-setup-functions-alist
-               '(hoon . combobulate-hoon-setup)))
-
-;;; SQL
-(load-file (concat user-emacs-directory "mixins/languages/sql-config.el"))
-
-;;; vim
-(use-package vimrc-mode)
-
-;; typst
-
-(with-eval-after-load 'treesit
-  (add-to-list 'treesit-language-source-alist
-               '(typst "https://github.com/uben0/tree-sitter-typst")))
-(use-package typst-ts-mode
-  :config
-  (add-to-list 'eglot-server-programs
-               `((typst-ts-mode)
-                 . ,(eglot-alternatives
-                     `(,typst-ts-lsp-download-path
-                       "tinymist"
-                       "typst-lsp"))))
-  :mode "\\.typ\\'")
-
-(use-package typst-watch
-  :after typst-ts-mode
-  :ensure (typst-watch
-           :host github
-           :repo "pasunboneleve/typst-watch")
-  :mode "\\.typ\\'")
+(be/lazy-mode be/python-mode "\\.py\\'" "mixins/languages/python-config.el"
+              python-ts-mode python python-mode)
+(add-to-list 'interpreter-mode-alist '("python[0-9.]*" . be/python-mode))
+(be/lazy-mode be/js-mode "\\.\\(?:[cm]?js\\|jsx\\)\\'" "mixins/languages/web-config.el"
+              jtsx-jsx-mode (javascript jsdoc) js-mode)
+(be/lazy-mode be/tsx-mode "\\.tsx\\'" "mixins/languages/web-config.el"
+              jtsx-tsx-mode (tsx jsdoc) js-mode)
+(be/lazy-mode be/ts-mode "\\.[cm]?ts\\'" "mixins/languages/web-config.el"
+              jtsx-typescript-mode (typescript jsdoc) js-mode)
+(be/lazy-mode be/html-mode "\\.html?\\'" "mixins/languages/web-config.el"
+              html-ts-mode html html-mode)
+(be/lazy-mode be/css-mode "\\.css\\'" "mixins/languages/web-config.el"
+              css-ts-mode css css-mode)
+(be/lazy-mode be/json-mode "\\.\\(?:json\\|tfstate\\|jshintrc\\)\\'" "mixins/languages/json-config.el"
+              json-ts-mode json js-mode)
+(be/lazy-mode be/csharp-mode "\\.cs\\'" "mixins/languages/csharp-config.el"
+              csharp-ts-mode c-sharp csharp-mode)
+(be/lazy-mode be/csproj-mode "\\.csproj\\'" "mixins/languages/csharp-config.el" csproj-mode)
+(be/lazy-mode be/go-mode "\\.go\\'" "mixins/languages/go-config.el" go-mode)
+(be/lazy-mode be/rust-mode "\\.rs\\'" "mixins/languages/rust-config.el" rustic-mode)
+(be/lazy-mode be/haskell-mode "\\.\\(?:hs\\|lhs\\)\\'" "mixins/languages/haskell-config.el" haskell-mode)
+(be/lazy-mode be/cabal-mode "\\.cabal\\'" "mixins/languages/haskell-config.el" haskell-cabal-mode)
+(be/lazy-mode be/scala-mode "\\.\\(?:scala\\|sc\\)\\'" "mixins/languages/scala-config.el" scala-mode)
+(be/lazy-mode be/java-mode "\\.java\\'" "mixins/languages/java-config.el" java-mode)
+(be/lazy-mode be/sql-mode "\\.sql\\'" "mixins/languages/sql-config.el" sql-mode)
+(be/lazy-mode be/csv-mode "\\.csv\\'" "mixins/languages/csv-config.el" csv-mode)
+(be/lazy-mode be/markdown-mode "\\.\\(?:md\\|markdown\\|udon\\)\\'" "mixins/languages/markdown-config.el" markdown-mode)
+(be/lazy-mode be/mermaid-mode "\\.mmd\\'" "mixins/languages/markdown-config.el" mermaid-mode)
+(be/lazy-mode be/yaml-mode "\\.\\(?:ya?ml\\|kubeconfig\\)\\'" "mixins/languages/yaml-config.el" yaml-mode)
+(be/lazy-mode be/graphviz-mode "\\.\\(?:dot\\|gv\\)\\'" "mixins/languages/graphviz-config.el" graphviz-dot-mode)
+(be/lazy-mode be/lisp-mode "\\.\\(?:cl\\|lisp\\)\\'" "mixins/languages/common-lisp-config.el" lisp-mode)
+(be/lazy-command be/sly "mixins/languages/common-lisp-config.el" sly)
+(be/lazy-mode be/hoon-mode "\\.hoon\\'" "mixins/languages/hoon-config.el" hoon-mode)
+(be/lazy-mode be/typst-mode "\\.typ\\'" "mixins/languages/typst-config.el"
+              typst-ts-mode typst text-mode)
+(be/lazy-mode be/dhall-mode "\\.dhall\\'" "mixins/languages/dhall-config.el" dhall-mode)
+(be/lazy-mode be/dockerfile-mode "Dockerfile\\'" "mixins/languages/dockerfile-config.el" dockerfile-mode)
+(be/lazy-mode be/elm-mode "\\.elm\\'" "mixins/languages/elm-config.el" elm-mode)
+(be/lazy-mode be/handlebars-mode "\\.hbs\\'" "mixins/languages/handlebars-config.el" handlebars-mode)
+(be/lazy-mode be/gherkin-mode "\\.feature\\'" "mixins/languages/pickle-config.el" pickle-mode)
+(be/lazy-mode be/racket-mode "\\.rkt\\'" "mixins/languages/racket-config.el" racket-mode)
+(be/lazy-mode be/theta-mode "\\.theta\\'" "mixins/languages/theta-config.el" theta-mode)
+(be/lazy-mode be/terraform-mode "\\.\\(?:tf\\|tfvars\\|tofu\\)\\'" "mixins/languages/terraform-config.el" terraform-mode)
+(be/lazy-mode be/vimrc-mode "\\(?:\\.vim\\|vimrc\\)\\'" "mixins/languages/vimrc-config.el" vimrc-mode)
+(be/lazy-mode be/udev-mode "\\.rules\\'" "mixins/languages/udev-config.el" udev-mode)
 
 (provide 'languages)
-;;; languages.el ends here.
+;;; languages.el ends here

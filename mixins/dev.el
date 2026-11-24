@@ -69,8 +69,13 @@
 
 ;; source editing and movement using treesitter when available
 (use-package combobulate
+  :if (treesit-available-p)
   :hook ((prog-mode . combobulate-mode))
-  :ensure (combobulate :host github :repo "dmvianna/combobulate"))
+  :ensure (combobulate :host github :repo "dmvianna/combobulate")
+  :config
+  ;; Keep structural editing; the fork's extra highlight queries use obsolete
+  ;; predicate syntax and grammar-specific fields.  Native modes own colours.
+  (advice-add 'combobulate-highlight-install :override #'ignore))
 
 ;; easily find other similar symbols in buffer
 (use-package smartscan)

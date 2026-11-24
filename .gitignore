@@ -4,8 +4,16 @@
 !early-init.el
 !init.el
 !mixins/
+!mixins/**/
 !mixins/**/*.el
 !local-packages/
 !local-packages/**/*.el
 **/#*#
 !**/*.gpg
+custom-local.el.gpg
+!.kata.toml
+!tests/
+!tests/**/*.el
+!docs/
+!docs/**/*.md
+.kata.local.toml
