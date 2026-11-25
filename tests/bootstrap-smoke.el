@@ -6,7 +6,7 @@
 (setq user-emacs-directory (file-name-as-directory (or (getenv "EMACS_TEST_DIRECTORY")
                                                        (error "Set EMACS_TEST_DIRECTORY"))))
 (setq use-package-expand-minimally t)
-(when (fboundp 'startup-redirect-eln-cache)
+(when (and (fboundp 'native-comp-available-p) (native-comp-available-p))
   (startup-redirect-eln-cache (expand-file-name "eln-cache/" user-emacs-directory)))
 (defvar be/smoke-config-errors nil)
 (advice-add 'display-warning :before

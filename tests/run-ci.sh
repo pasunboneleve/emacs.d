@@ -13,7 +13,7 @@ export NATIVE_DISABLED=1
 trap 'gpgconf --kill all' EXIT
 
 # Copy only tracked sources: local bytecode and package caches must not mask failures.
-git ls-files -z -- '*.el' '*.gpg' | while IFS= read -r -d '' path; do
+git -c safe.directory="$source_directory" ls-files -z -- '*.el' '*.gpg' | while IFS= read -r -d '' path; do
   mkdir -p "$EMACS_TEST_DIRECTORY/$(dirname "$path")"
   cp "$source_directory/$path" "$EMACS_TEST_DIRECTORY/$path"
 done
