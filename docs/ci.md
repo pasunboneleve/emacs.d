@@ -1,0 +1,44 @@
+# Continuous integration
+
+`.github/workflows/ci.yml` runs for every pull request, pushes to `main`, and
+manual dispatches. The stable required check is `validate`; it fails if any
+platform job fails, is cancelled, or is skipped. There are no path filters.
+
+The jobs use Ubuntu 24.04's stock Emacs 29.3, Fedora 45's stock Emacs, and
+Homebrew Emacs on macOS 15. The stock Fedora and Homebrew versions advance
+with their package repositories. Each job starts without an Emacs package
+cache or private SSH/GPG keys. Elpaca still limits concurrent installations
+to two, and jobs have a 45-minute limit.
+
+The shared runner checks Lisp syntax, portability ERT tests, real GPG key
+creation and reuse, package bootstrap, first-use file modes and tree-sitter
+grammars, and ordinary startup with native compilation enabled where
+available. A global Git SSH rewrite exercises HTTPS fallback without keys.
+The tests also assert that unrelated language packages stay uninstalled.
+Language-server startup is stubbed in the first-use test; this suite does
+not provision SDKs or authenticate services. GUI font installation is tested
+through simulated frame callbacks, not a graphical desktop.
+
+Run the same suite from the repository root, with Emacs, Git, GnuPG, curl,
+and a C/C++ toolchain installed:
+
+```sh
+bash tests/run-ci.sh
+```
+
+The script copies tracked Lisp/encrypted files into a temporary configuration
+and gives it a separate home and keyring. Set `CI_TEST_ROOT` to a new absolute
+directory to choose its location. Logs remain there after execution; GPG
+agents are stopped on exit. GitHub uploads only diagnostic logs, never the
+generated keyring. Package downloads are deliberately uncached so cold-start
+regressions cannot hide behind previous builds.
+
+`main` requires a PR and the GitHub Actions `validate` check, including for
+administrators. Merge commits retain the individual changes. Version tags
+are created only after the release PR is merged and its post-merge CI passes.
+
+`VERSION` and the dated section in `CHANGELOG.md` identify the intended version
+tag. This is a tag-only release: there are no binary artifacts to publish.
+The changelog records the previous configuration commit for rollback. A tag
+captures configuration sources; upstream package revisions still follow their
+recipes, so it is not a snapshot of the installed package cache.

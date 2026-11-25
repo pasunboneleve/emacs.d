@@ -17,3 +17,9 @@ custom-local.el.gpg
 !docs/
 !docs/**/*.md
 .kata.local.toml
+!.github/
+!.github/workflows/
+!.github/workflows/*.yml
+!tests/*.sh
+!CHANGELOG.md
+!VERSION
