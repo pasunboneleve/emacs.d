@@ -231,10 +231,7 @@ Private completion markers avoid reinstalling a package bundle at every startup.
          (require 'be-assets)
          (be/grammar-ready-p (intern (substring name 8))))
         ((equal name "vterm-module")
-         (when-let ((library (locate-library "vterm")))
-           (and module-file-suffix
-                (file-exists-p (expand-file-name (concat "vterm-module" module-file-suffix)
-                                                (file-name-directory library))))))
+         (and module-file-suffix (locate-library "vterm-module")))
         ((equal name "dotnet11")
          (let ((private (expand-file-name "dotnet" (be/tool-directory "dotnet"))))
            (cl-find-if

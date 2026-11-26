@@ -275,6 +275,18 @@
             (should (equal (be/java-runtime) binary))))
       (delete-directory root t))))
 
+(ert-deftest be/vterm-readiness-uses-emacs-library-resolution ()
+  (let* ((directory (make-temp-file "emacs-vterm-module-" t))
+         (load-path (list directory))
+         (load-suffixes '(".so" ".elc" ".el"))
+         (module-file-suffix ".dylib"))
+    (unwind-protect
+        (progn
+          (should-not (be/tool-present-p "vterm-module"))
+          (with-temp-file (expand-file-name "vterm-module.so" directory) (insert "fixture"))
+          (should (be/tool-present-p "vterm-module")))
+      (delete-directory directory t))))
+
 (ert-deftest be/java-runtime-downloads-the-required-major ()
   (cl-letf (((symbol-function 'executable-find) (lambda (_) nil))
             ((symbol-function 'file-directory-p) (lambda (_) nil))
