@@ -192,14 +192,19 @@ Only replace an earlier private installation after extraction finds the binary."
 
 (defun be/java-runtime ()
   "Return Java 21+ for editor tools without replacing a project's Java."
-  (let ((java (executable-find "java")))
-    (if (and java
+  (let* ((java (executable-find "java"))
+         (native
+          (and java
              (with-temp-buffer
-               (and (zerop (call-process java nil '(t t) nil "-version"))
+               (and (zerop (call-process java nil '(t t) nil "-XshowSettings:properties" "-version"))
                     (goto-char (point-min))
                     (re-search-forward "version \"\\([0-9]+\\)" nil t)
-                    (>= (string-to-number (match-string 1)) 21))))
-        (file-truename java)
+                    (>= (string-to-number (match-string 1)) 21)
+                    (goto-char (point-min))
+                    (re-search-forward "^[ \t]*java\\.home = \\(.*\\)$" nil t)
+                    (let ((binary (expand-file-name "bin/java" (string-trim (match-string 1)))))
+                      (and (file-executable-p binary) binary)))))))
+    (if native native
       (or (when (file-directory-p (be/tool-directory "jdk-21"))
             (car (directory-files-recursively (be/tool-directory "jdk-21") "/bin/java\\'")))
           (pcase-let ((`(,os ,arch) (be/tool-platform)))

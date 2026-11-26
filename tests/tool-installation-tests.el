@@ -257,5 +257,21 @@
     (should authenticated)
     (should fallback))))
 
+(ert-deftest be/java-launcher-resolves-its-real-sdk-home ()
+  (let* ((root (make-temp-file "emacs-jdk-home-" t))
+         (binary (expand-file-name "bin/java" root)))
+    (unwind-protect
+        (progn
+          (make-directory (file-name-directory binary) t)
+          (with-temp-file binary (insert "#!/usr/bin/env bash\nset -euo pipefail\nexit 0\n"))
+          (set-file-modes binary #o755)
+          (cl-letf (((symbol-function 'executable-find) (lambda (_) "/usr/bin/java"))
+                    ((symbol-function 'call-process)
+                     (lambda (&rest _)
+                       (insert (format "Property settings:\n    java.home = %s\nopenjdk version \"21.0.8\"\n" root))
+                       0)))
+            (should (equal (be/java-runtime) binary))))
+      (delete-directory root t))))
+
 (provide 'tool-installation-tests)
 ;;; tool-installation-tests.el ends here

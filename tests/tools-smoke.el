@@ -7,15 +7,25 @@
 
 (defun be/smoke-tool (name &rest arguments)
   "Provision NAME, then execute its version/help ARGUMENTS."
-  (princ (format "Installing and checking %s\n" name))
+  (message "Installing and checking %s" name)
   (unless (be/ensure-tool name)
     (when-let ((buffer (get-buffer "*Emacs dependency installation*")))
       (princ (with-current-buffer buffer (buffer-string))))
     (error "Could not provision %s" name))
   (when arguments
-    (with-temp-buffer
-      (unless (zerop (apply #'call-process name nil '(t t) nil arguments))
-        (error "%s validation failed: %s" name (buffer-string))))))
+    (let ((output (generate-new-buffer (concat " *CLI check " name "*"))) process)
+      (unwind-protect
+          (progn
+            (setq process (make-process :name (concat "check-" name) :buffer output
+                                        :command (cons name arguments) :connection-type 'pipe :noquery t))
+            (let ((deadline (+ (float-time) 180)))
+              (while (and (process-live-p process) (< (float-time) deadline))
+                (accept-process-output process 0.1)))
+            (unless (and (eq (process-status process) 'exit) (zerop (process-exit-status process)))
+              (error "%s validation failed or timed out: %s" name (with-current-buffer output (buffer-string)))))
+        (when (process-live-p process) (delete-process process))
+        (kill-buffer output))))
+  (message "%s CLI check passed" name))
 
 (defun be/smoke-lsp (name command)
   "Require an actual initialize response from language server NAME and COMMAND."
