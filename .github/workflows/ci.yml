@@ -38,6 +38,8 @@ jobs:
         with:
           persist-credentials: false
       - name: Test fresh installation and first use
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: CI_TEST_ROOT="$RUNNER_TEMP/emacs-ci" bash tests/run-ci.sh
       - name: Preserve diagnostic logs
         if: always()
@@ -61,6 +63,8 @@ jobs:
       - name: Install Homebrew packages
         run: brew install emacs gnupg
       - name: Test fresh installation and first use
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: CI_TEST_ROOT="$RUNNER_TEMP/emacs-ci" bash tests/run-ci.sh
       - name: Preserve diagnostic logs
         if: always()

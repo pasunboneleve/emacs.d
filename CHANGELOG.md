@@ -2,16 +2,16 @@
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-11-26
+
+### Changed
+
 - Provision missing language servers and configured CLI dependencies on first
   use, including Java, C#, Scala, Haskell, Elm, and Mermaid preview. Run tool
   and grammar installation in a serial background queue with progress and
   resource limits. Preserve project-local formatters and project SDK choices.
 - Exercise real CLI installation, language-server initialization, and Mermaid
   SVG rendering in cross-platform CI.
-
-## [1.0.0] - 2026-11-26
-
-### Changed
 
 - Require Emacs 29 or newer. Install optional language, AI, document, and
   entertainment packages when first used; keep everyday UI available at startup.

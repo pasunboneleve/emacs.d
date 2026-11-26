@@ -99,21 +99,45 @@
 
 (defun be/github-asset (repository regexp)
   "Return the latest stable release asset of REPOSITORY matching REGEXP."
-  (let ((buffer (url-retrieve-synchronously
-                 (concat "https://api.github.com/repos/" repository "/releases/latest") t t 30)))
-    (unless buffer (error "Cannot read releases for %s" repository))
-    (unwind-protect
+  (let ((buffer (let* ((token (or (getenv "GH_TOKEN") (getenv "GITHUB_TOKEN")))
+                      (url-request-extra-headers
+                       (when token (list (cons "Authorization" (concat "Bearer " token))))))
+                  (url-retrieve-synchronously
+                   (concat "https://api.github.com/repos/" repository "/releases/latest") t t 30))))
+    (if (not buffer) (be/github-public-asset repository regexp)
+      (unwind-protect
         (with-current-buffer buffer
-          (unless (= url-http-response-status 200)
-            (error "Release lookup failed for %s: HTTP %s" repository url-http-response-status))
+          (if (/= url-http-response-status 200)
+              (progn
+                (message "GitHub API HTTP %s; using public release assets for %s" url-http-response-status repository)
+                (be/github-public-asset repository regexp))
           (goto-char (point-min))
           (re-search-forward "\r?\n\r?\n")
           (or (cl-find-if
                (lambda (asset) (string-match-p regexp (alist-get 'name asset)))
                (alist-get 'assets (json-parse-buffer :object-type 'alist :array-type 'list
                                                     :null-object nil :false-object nil)))
-              (error "No %s release asset matching %s" repository regexp)))
-      (kill-buffer buffer))))
+              (error "No %s release asset matching %s" repository regexp))))
+        (kill-buffer buffer)))))
+
+(defun be/github-public-asset (repository regexp)
+  "Resolve a public release without API credentials or API rate-limit capacity."
+  (let* ((base (concat "https://github.com/" repository "/releases/"))
+         (page (be/upstream-text (concat base "latest")))
+         (tag-pattern (concat "/" (regexp-quote repository) "/releases/tag/\\([^\" <>]+\\)")))
+    (unless (string-match tag-pattern page) (error "Cannot discover release tag for %s" repository))
+    (let* ((tag (match-string 1 page))
+           (assets (be/upstream-text (concat base "expanded_assets/" tag)))
+           (pattern (concat "href=\"\\(/" (regexp-quote repository) "/releases/download/[^\"]+\\)\""))
+           (start 0) found)
+      (while (and (not found) (string-match pattern assets start))
+        (let* ((path (match-string 1 assets))
+               (end (match-end 0))
+               (filename (url-unhex-string (file-name-nondirectory path))))
+          (setq start end)
+          (when (string-match-p regexp filename)
+            (setq found `((name . ,filename) (browser_download_url . ,(concat "https://github.com" path)))))))
+      (or found (error "No %s public release asset matching %s" repository regexp)))))
 
 (defun be/extract-tool (name url filename executable &optional digest)
   "Install archive URL for NAME and return its EXECUTABLE path.

@@ -41,7 +41,9 @@
   "Install uv in the user account using its upstream installer."
   (or (executable-find "uv")
       (when (and be/allow-tool-installation (not (file-remote-p default-directory)))
-        (be/install-user-script "https://astral.sh/uv/install.sh")
+        (let ((process-environment (copy-sequence process-environment)))
+          (setenv "UV_NO_MODIFY_PATH" "1")
+          (be/install-user-script "https://astral.sh/uv/install.sh"))
         (executable-find "uv"))))
 
 (defun be/tool-installer (name)

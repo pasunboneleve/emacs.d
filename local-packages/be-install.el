@@ -41,16 +41,16 @@
   (let ((command (list (expand-file-name invocation-name invocation-directory)
                        "-Q" "--batch" "-l" be/tool-worker-file
                        name (prin1-to-string installer))))
+    (when (executable-find "nice")
+      (setq command (append '("nice" "-n" "10") command)))
     ;; A user scope contains the whole process tree, including compiler children.
     ;; CI/root/bus-less environments use the normal child process and build limits.
     (when (and (eq system-type 'gnu/linux) (not (zerop (user-uid)))
                (getenv "DBUS_SESSION_BUS_ADDRESS") (executable-find "systemd-run"))
       (setq command (append '("systemd-run" "--user" "--scope" "--quiet"
                               "-p" "MemoryMax=2G" "-p" "MemorySwapMax=0"
-                              "-p" "CPUQuota=100%" "-p" "Nice=10") command)))
-    (if (and (executable-find "nice") (not (equal (car command) "systemd-run")))
-        (append '("nice" "-n" "10") command)
-      command)))
+                              "-p" "CPUQuota=100%") command)))
+    command))
 
 (defun be/native-tool-command (name installer)
   "Return a native package command for NAME, or nil for a private installer."

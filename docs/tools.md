@@ -14,6 +14,10 @@ Formatters provision their executable on demand; the next save or format command
 uses the ready tool. Project-local npm/PnP formatters take precedence over a
 global fallback.
 
+Public release discovery falls back to GitHub's public release pages when its
+API is rate-limited. CI supplies its temporary read-only token for API requests;
+normal installations do not require a personal GitHub token.
+
 Use `M-x be/install-tool` to install or retry a named executable. Failed
 installations produce a warning and leave editing available. Remote buffers
 do not trigger local installation. Batch validation deliberately waits for
