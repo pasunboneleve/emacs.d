@@ -2,16 +2,32 @@
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-11-26
+
+### Fixed
+
+- Use lexical binding as the global evaluation default while honoring explicit
+  file declarations and the native loader policy on each supported Emacs.
+  Load CLI installer network libraries only when needed, avoiding premature
+  activation of their `map` dependency.
+- Keep published tags immutable and record subsequent fixes as distinct patch
+  releases with their own version and changelog section.
+
+## [1.0.1] - 2026-11-26
+
+### Fixed
+
+- Queue startup package declarations before processing their dependencies,
+  avoiding duplicate-order failures in normal and daemon startup. Use built-in
+  terminal completion on Emacs 31 instead of the Corfu terminal extension.
+- Enable startup modes when their packages become ready and open the sidebar
+  after both package activation and frame layout. Exercise the real startup
+  phase in cross-platform bootstrap tests.
+
 ## [1.0.0] - 2026-11-26
 
 ### Changed
 
-- Use lexical binding as the global default while honoring explicit file
-  declarations. Load CLI installer network libraries only when needed,
-  avoiding premature activation of their `map` dependency.
-- Queue startup package declarations before processing their dependencies,
-  avoiding duplicate-order failures in normal and daemon startup. Use built-in
-  terminal completion on Emacs 31 instead of the Corfu terminal extension.
 - Provision missing language servers and configured CLI dependencies on first
   use, including Java, C#, Scala, Haskell, Elm, and Mermaid preview. Run tool
   and grammar installation in a serial background queue with progress and

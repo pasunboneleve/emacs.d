@@ -52,6 +52,9 @@ regressions cannot hide behind previous builds.
 `main` requires a PR and the GitHub Actions `validate` check, including for
 administrators. Merge commits retain the individual changes. Version tags
 are created only after the release PR is merged and its post-merge CI passes.
+Published tags are immutable. Each bugfix release increments the patch version
+and gets its own changelog section and new tag. The pre-work configuration is
+preserved by `pre-2026-11-26`; later fixes never replace that reference.
 
 `VERSION` and the dated section in `CHANGELOG.md` identify the intended version
 tag. This is a tag-only release: there are no binary artifacts to publish.

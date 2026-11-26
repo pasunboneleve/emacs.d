@@ -25,17 +25,22 @@
   (let ((directory (make-temp-file "emacs-lexical-fixtures-" t)))
     (unwind-protect
         (progn
-          (dolist (explicit '(nil t))
-            (with-temp-file (expand-file-name (if explicit "dynamic.el" "undeclared.el") directory)
-              (when explicit (insert ";;; -*- lexical-binding: nil; -*-\n"))
+          (dolist (dialect '(lexical dynamic))
+            (with-temp-file (expand-file-name (format "%s.el" dialect) directory)
+              (insert (format ";;; -*- lexical-binding: %S; -*-\n" (eq dialect 'lexical)))
               (insert "(setq be/lexical-test-closure (let ((captured 42)) (lambda () captured)))\n")))
           (be/check-startup-forms
            `((load ,(expand-file-name "early-init.el" be/defaults-test-root) nil t)
              (setq inhibit-message nil inhibit-redisplay nil)
              (unless (default-value 'lexical-binding) (error "Lexical default is disabled"))
-             (load ,(expand-file-name "undeclared.el" directory) nil t)
+             (with-temp-buffer
+               (insert "(setq be/lexical-test-closure (let ((captured 42)) (lambda () captured)))")
+               (eval-buffer))
              (unless (= (funcall be/lexical-test-closure) 42)
-               (error "Undeclared source did not capture lexical scope"))
+               (error "Buffer evaluation did not use the lexical default"))
+             (load ,(expand-file-name "lexical.el" directory) nil t)
+             (unless (= (funcall be/lexical-test-closure) 42)
+               (error "Explicit lexical source did not capture scope"))
              (load ,(expand-file-name "dynamic.el" directory) nil t)
              (condition-case nil
                  (progn (funcall be/lexical-test-closure) (error "Explicit dynamic scope was overridden"))
