@@ -30,9 +30,12 @@
               (insert (format ";;; -*- lexical-binding: %S; -*-\n" (eq dialect 'lexical)))
               (insert "(setq be/lexical-test-closure (let ((captured 42)) (lambda () captured)))\n")))
           (be/check-startup-forms
-           `((load ,(expand-file-name "early-init.el" be/defaults-test-root) nil t)
+           `((let ((lexical-binding nil))
+               (load ,(expand-file-name "early-init.el" be/defaults-test-root) nil t)
+               (when lexical-binding (error "A temporary binding was overwritten")))
              (setq inhibit-message nil inhibit-redisplay nil)
-             (unless (default-value 'lexical-binding) (error "Lexical default is disabled"))
+             (unless (default-toplevel-value 'lexical-binding)
+               (error "Persistent lexical default is disabled"))
              (with-temp-buffer
                (insert "(setq be/lexical-test-closure (let ((captured 42)) (lambda () captured)))")
                (eval-region (point-min) (point-max)))

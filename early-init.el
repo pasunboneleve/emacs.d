@@ -3,8 +3,8 @@
 ;;; early init file
 ;;; Code:
 
-;; Undeclared Lisp uses lexical scope; explicit file-local choices still win.
-(setq-default lexical-binding t)
+;; File loading binds this temporarily; keep the default after it unwinds.
+(set-default-toplevel-value 'lexical-binding t)
 
 ;;; no secrets should get saved in plaintext
 (setq auth-sources '("secrets:Login" "~/.authinfo.gpg"))

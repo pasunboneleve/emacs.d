@@ -68,7 +68,7 @@
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
 (defvar elpaca-sources-directory (expand-file-name "sources/" elpaca-directory))
-(defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
+(defvar elpaca-order '(elpaca :inherit nil :repo "https://github.com/progfolio/elpaca.git"
                               :ref nil :depth 1
                               :files (:defaults "elpaca-test.el" (:exclude "extensions"))
                               :build (:not elpaca--activate-package)))
@@ -112,6 +112,11 @@
 (add-hook 'elpaca-recipe-functions #'be/package-compatibility)
 (add-hook 'after-init-hook #'elpaca-process-queues)
 (elpaca `(,@elpaca-order))
+
+;; Recipe menus need URL/auth-source/JSON, which require map during bootstrap.
+(elpaca (map :inherit nil :repo "https://github.com/emacs-straight/map"
+             :branch "master" :depth 1 :files (:defaults) :main "map.el"))
+(elpaca-wait)
 
 (defun be/elpaca-drop-plist-key (plist key)
   "Return PLIST without KEY."
@@ -166,7 +171,7 @@ queue after all declarations have been read."
                              :url "https://elpa.gnu.org/packages/external-completion.tar"))
 (elpaca (refactor :inherit nil :type tar
                   :url "https://elpa.gnu.org/packages/refactor.tar"))
-(dolist (package '(compat transient seq map project xref eldoc eglot flymake jsonrpc))
+(dolist (package '(compat transient seq project xref eldoc eglot flymake jsonrpc))
   (eval `(elpaca ,package)))
 (when (< emacs-major-version 30)
   (elpaca which-key))

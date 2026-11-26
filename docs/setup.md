@@ -75,7 +75,8 @@ the setting is not a security fix by itself. Distribution site files run
 before user configuration, so their missing-declaration warnings can remain.
 
 Installer network libraries load only when an installer needs them, keeping
-their `map` dependency out of the early bootstrap. Emacs can already have
+their `map` dependency out of helper loading. The bootstrap activates managed
+`map` before recipe menus load URL/authentication/JSON libraries. Emacs can already have
 `seq` and `eldoc` loaded before user initialization; their compatibility
 upgrades remain necessary on older supported versions.
 
