@@ -2,7 +2,8 @@
 ;;; Commentary:
 ;; Launched by be-install; never loaded into the user's interactive Emacs.
 ;;; Code:
-(setq gc-cons-threshold (* 64 1024 1024) gc-cons-percentage 0.1)
+(setq gc-cons-threshold (* 64 1024 1024) gc-cons-percentage 0.1
+      load-prefer-newer t)
 (add-to-list 'load-path (file-name-directory load-file-name))
 (setq user-emacs-directory (getenv "BE_TOOL_EMACS_DIRECTORY"))
 (require 'be-system)

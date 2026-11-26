@@ -28,7 +28,7 @@ installation and reports a failing exit status when it cannot complete.
 | Feature | Tools | Route |
 | --- | --- | --- |
 | Typst | Tinymist, Typst, Typstyle | Official release binaries |
-| Java | JDTLS, google-java-format | Eclipse snapshot archive and upstream JAR; Java 21+ |
+| Java | JDTLS, google-java-format | Eclipse snapshot archive and upstream JAR; Java 25 for JDTLS, 21+ for formatting |
 | C# | OmniSharp, CSharpier | Official release and .NET tool; private .NET 11 SDK when needed |
 | Scala | Metals, sbt, Scalafmt | Coursier launchers and Java 21+ |
 | Haskell | HLS, GHC, Cabal, Stack; Fourmolu | GHCup; Fourmolu release binary |
@@ -50,9 +50,10 @@ does not install Haskell or Common Lisp.
 ## SDKs and licenses
 
 Java tools reuse a suitable installed Java or download
-[Eclipse Temurin OpenJDK](https://adoptium.net/docs/faq/) 21, licensed under
+[Eclipse Temurin OpenJDK](https://adoptium.net/docs/faq/), licensed under
 GPLv2 with the Classpath Exception. This avoids Oracle's proprietary JDK
-download flow. [JDTLS requires Java 21 or newer](https://github.com/eclipse-jdtls/eclipse.jdt.ls).
+download flow. JDTLS uses Java 25 because its current Eclipse snapshot bundles
+components requiring Java 25. The other Java tools accept Java 21 or newer.
 Its launcher uses a 128 MiB initial heap and a 1 GiB maximum heap.
 
 SDKs live under `~/.local/share/emacs-tools/`; launchers live in `~/.local/bin/`.

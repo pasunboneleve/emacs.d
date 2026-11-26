@@ -190,28 +190,31 @@ Only replace an earlier private installation after extraction finds the binary."
                                  (alist-get 'name asset) executable (alist-get 'digest asset))))
     (be/tool-wrapper name (list binary))))
 
-(defun be/java-runtime ()
-  "Return Java 21+ for editor tools without replacing a project's Java."
-  (let* ((java (executable-find "java"))
+(defun be/java-runtime (&optional minimum)
+  "Return Java MINIMUM or newer without replacing a project's Java.
+MINIMUM defaults to 21; each runtime is cached separately."
+  (let* ((minimum (or minimum 21))
+         (runtime (format "jdk-%s" minimum))
+         (java (executable-find "java"))
          (native
           (and java
              (with-temp-buffer
                (and (zerop (call-process java nil '(t t) nil "-XshowSettings:properties" "-version"))
                     (goto-char (point-min))
                     (re-search-forward "version \"\\([0-9]+\\)" nil t)
-                    (>= (string-to-number (match-string 1)) 21)
+                    (>= (string-to-number (match-string 1)) minimum)
                     (goto-char (point-min))
                     (re-search-forward "^[ \t]*java\\.home = \\(.*\\)$" nil t)
                     (let ((binary (expand-file-name "bin/java" (string-trim (match-string 1)))))
                       (and (file-executable-p binary) binary)))))))
     (if native native
-      (or (when (file-directory-p (be/tool-directory "jdk-21"))
-            (car (directory-files-recursively (be/tool-directory "jdk-21") "/bin/java\\'")))
+      (or (when (file-directory-p (be/tool-directory runtime))
+            (car (directory-files-recursively (be/tool-directory runtime) "/bin/java\\'")))
           (pcase-let ((`(,os ,arch) (be/tool-platform)))
             (be/extract-tool
-             "jdk-21"
-             (format "https://api.adoptium.net/v3/binary/latest/21/ga/%s/%s/jdk/hotspot/normal/eclipse"
-                     (if (equal os "darwin") "mac" os)
+             runtime
+             (format "https://api.adoptium.net/v3/binary/latest/%s/ga/%s/%s/jdk/hotspot/normal/eclipse"
+                     minimum (if (equal os "darwin") "mac" os)
                      (if (equal arch "x86_64") "x64" arch))
              "jdk.tar.gz" "java"))))))
 
@@ -267,7 +270,7 @@ Only replace an earlier private installation after extraction finds the binary."
                                    (alist-get 'name asset) name (alist-get 'digest asset))))
          (be/tool-wrapper name (list (be/java-runtime) "-jar" jar))))
       ("jdtls"
-       (let* ((java (be/java-runtime))
+       (let* ((java (be/java-runtime 25))
               (base "https://download.eclipse.org/jdtls/snapshots/")
               (buffer (url-retrieve-synchronously (concat base "latest.txt") t t 30))
               filename)

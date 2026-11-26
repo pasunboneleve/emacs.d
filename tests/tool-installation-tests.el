@@ -275,6 +275,17 @@
             (should (equal (be/java-runtime) binary))))
       (delete-directory root t))))
 
+(ert-deftest be/java-runtime-downloads-the-required-major ()
+  (cl-letf (((symbol-function 'executable-find) (lambda (_) nil))
+            ((symbol-function 'file-directory-p) (lambda (_) nil))
+            ((symbol-function 'be/tool-platform) (lambda () '("linux" "x86_64")))
+            ((symbol-function 'be/extract-tool)
+             (lambda (name url _archive _binary &rest _)
+               (should (equal name "jdk-25"))
+               (should (string-match-p "/latest/25/ga/linux/x64/" url))
+               "/private/jdk-25/bin/java")))
+    (should (equal (be/java-runtime 25) "/private/jdk-25/bin/java"))))
+
 (ert-deftest be/cancelling-authentication-releases-the-installation-queue ()
   (let ((be/tool-current nil) (be/tool-process nil) (be/tool-queue '("native" "dependent"))
         (be/tool-installers (make-hash-table :test 'equal))
@@ -288,6 +299,44 @@
       (should-not be/tool-current)
       (should-not be/tool-process)
       (should-not be/tool-queue))))
+
+(ert-deftest be/macos-finds-keg-only-postgresql-client ()
+  (let* ((root (make-temp-file "emacs-libpq-test-" t))
+         (system-type 'darwin) (exec-path nil)
+         (process-environment (copy-sequence process-environment))
+         (binary (expand-file-name "opt/libpq/bin/psql" root)))
+    (unwind-protect
+        (progn
+          (setenv "HOME" root) (setenv "HOMEBREW_PREFIX" root) (setenv "PATH" "")
+          (make-directory (file-name-directory binary) t)
+          (with-temp-file binary (insert "#!/usr/bin/env bash\nset -euo pipefail\nexit 0\n"))
+          (set-file-modes binary #o755)
+          (be/tool-paths)
+          (should (equal (executable-find "psql") binary)))
+      (delete-directory root t))))
+
+(ert-deftest be/worker-loads-fresh-source-over-stale-bytecode ()
+  (let* ((root (make-temp-file "emacs-worker-source-" t))
+         (source (expand-file-name "be-system.el" root))
+         (worker (expand-file-name "be-tool-worker.el" root))
+         (marker (expand-file-name "fresh" root))
+         (process-environment (copy-sequence process-environment))
+         (default-directory (file-name-as-directory root)))
+    (unwind-protect
+        (progn
+          (copy-file be/tool-worker-file worker)
+          (with-temp-file source
+            (insert "(defun be/ensure-tool (&rest _) (error \"Stale installer\"))\n(provide 'be-system)\n"))
+          (byte-compile-file source)
+          (set-file-times (concat source "c") (time-subtract (current-time) (seconds-to-time 10)))
+          (with-temp-file source
+            (insert (format "(defun be/ensure-tool (&rest _) (with-temp-file %S (insert \"fresh\")) t)\n(provide 'be-system)\n" marker)))
+          (setenv "BE_TOOL_EMACS_DIRECTORY" root)
+          (with-temp-buffer
+            (should (zerop (call-process (expand-file-name invocation-name invocation-directory)
+                                         nil t nil "-Q" "--batch" "-l" worker "fixture" "nil"))))
+          (should (file-exists-p marker)))
+      (delete-directory root t))))
 
 (provide 'tool-installation-tests)
 ;;; tool-installation-tests.el ends here

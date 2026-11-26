@@ -8,11 +8,17 @@
 
 (defun be/tool-paths ()
   "Expose user-local tools while preserving project executables' precedence."
-  (dolist (directory '("~/.local/bin" "~/.cargo/bin" "~/.ghcup/bin" "~/.cabal/bin" "~/go/bin"))
+  (let ((directories '("~/.local/bin" "~/.cargo/bin" "~/.ghcup/bin" "~/.cabal/bin" "~/go/bin")))
+    (when (eq system-type 'darwin)
+      (let ((prefix (or (getenv "HOMEBREW_PREFIX")
+                        (when-let ((brew (executable-find "brew")))
+                          (file-name-directory (directory-file-name (file-name-directory brew)))))))
+        (when prefix (push (expand-file-name "opt/libpq/bin" prefix) directories))))
+  (dolist (directory directories)
     (let ((path (expand-file-name directory)))
       (unless (member path exec-path) (setq exec-path (append exec-path (list path))))
       (unless (member path (split-string (or (getenv "PATH") "") path-separator))
-        (setenv "PATH" (concat (getenv "PATH") path-separator path))))))
+        (setenv "PATH" (concat (getenv "PATH") path-separator path)))))))
 
 (defvar be/allow-tool-installation t
   "Dynamically bound to nil while configuring a feature from a remote buffer.")

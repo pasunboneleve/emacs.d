@@ -51,6 +51,10 @@
                                (string-match-p "\"capabilities\"" (buffer-string)))))
               (accept-process-output process 0.1)))
           (unless (with-current-buffer output (string-match-p "\"capabilities\"" (buffer-string)))
+            (when (equal name "jdtls")
+              (dolist (log (directory-files-recursively (be/tool-directory "jdtls") "\\.log\\'"))
+                (message "JDTLS diagnostic %s:\n%s" log
+                         (with-temp-buffer (insert-file-contents log) (buffer-string)))))
             (error "%s did not initialize. stdout=%s stderr=%s" name
                    (with-current-buffer output (buffer-string))
                    (with-current-buffer errors (buffer-string))))
@@ -67,7 +71,7 @@
                   ("haskell-language-server-wrapper" "--version") ("stack" "--version")
                   ("cabal" "--version") ("elm-language-server" "--version")
                   ("prettier" "--version") ("mmdc" "--version") ("sqlfluff" "--version")
-                  ("racket" "--version") ("dot" "-V") ("dhall" "--version")
+                  ("racket" "--version") ("dot" "-V") ("dhall" "--version") ("psql" "--version")
                   ("aider" "--version")))
   (apply #'be/smoke-tool entry))
 (be/smoke-lsp "tinymist" '("tinymist"))
