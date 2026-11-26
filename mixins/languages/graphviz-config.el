@@ -4,6 +4,7 @@
 ;;; Code:
 
 (use-package graphviz-dot-mode
+  :ensure-system-package dot
   :custom
   (graphviz-dot-mode-indent-width 2)
   (graphviz-dot-auto-indent-on-semi t)
@@ -15,6 +16,8 @@
   :mode ("\\.dot\\'" "\\.gv\\'")
   :bind (:map graphviz-dot-mode-map
               ("C-c p" . graphviz-dot-preview)))
+
+(be/command-tools 'graphviz-dot-preview '("dot"))
 
 (provide 'graphviz-config)
 ;;; graphviz-config.el ends here

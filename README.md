@@ -23,7 +23,8 @@ Missing private keys leave encrypted configuration files intact and skipped.
 New local secrets use a machine-local encryption key created when necessary.
 
 See [docs/setup.md](docs/setup.md) for installation behavior, key handling,
-first-use commands, and recovery.
+first-use commands, and recovery, and [docs/tools.md](docs/tools.md) for CLI
+provisioning and progress reporting.
 
 See [CHANGELOG.md](CHANGELOG.md) for release changes and the previous configuration.
 

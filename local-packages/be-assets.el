@@ -25,10 +25,15 @@
   "Grammar sources and compatible releases; add exceptions here only.")
 
 (defvar be/grammar-failures nil)
+(defvar be/grammar-ready-function nil
+  "Callback supplied by a lazy mode while its grammar is being installed.")
 
 (defun be/grammar-compiler (command &rest _)
   "Provision a C++ compiler only when the grammar's scanner needs one."
   (when (equal command "c++")
+    (when (and (getenv "BE_TOOL_WORKER") (not (executable-find "c++")))
+      (princ "BE_TOOL_PREREQUISITE:c++\n")
+      (error "Grammar needs a C++ compiler"))
     (unless (be/ensure-tool 'c++)
       (error "A C++ compiler is required for this grammar"))))
 
@@ -47,22 +52,35 @@
                             (or (nth 2 source) "head"))
                     user-emacs-directory))
 
-(defun be/ensure-grammar (language)
-  "Install LANGUAGE before selecting its mode; return nil on failure.
-Do not repeatedly retry a failed download in the same session."
-  (when (treesit-available-p)
-    (let* ((source (copy-tree (assq language be/grammar-sources)))
+(defun be/grammar-source (language)
+  "Return LANGUAGE's source at a revision compatible with this Emacs."
+  (let* ((source (copy-tree (assq language be/grammar-sources)))
            (revision (and (>= emacs-major-version 30)
                           (alist-get language '((javascript . "v0.23.1")
                                                 (jsdoc . "v0.23.2")
                                                 (tsx . "v0.23.2")
                                                 (typescript . "v0.23.2")))))
-           (_ (when revision (setf (nth 2 source) revision)))
+           (_ (when revision (setf (nth 2 source) revision))))
+    source))
+
+(defun be/grammar-ready-p (language)
+  "Return non-nil if LANGUAGE's configured grammar is installed and loadable."
+  (let ((directory (be/grammar-directory language (be/grammar-source language))))
+    (add-to-list 'treesit-extra-load-path directory)
+    (and (file-directory-p directory)
+         (directory-files directory nil "\\.\\(?:so\\|dylib\\)\\'")
+         (treesit-language-available-p language))))
+
+(defun be/ensure-grammar (language)
+  "Make LANGUAGE available, building in the background in interactive Emacs.
+Return nil while pending or on failure; pending work is never cached as failure."
+  (when (treesit-available-p)
+    (let* ((source (be/grammar-source language))
            (directory (be/grammar-directory language source)))
       (add-to-list 'treesit-extra-load-path directory)
-      (or (and (file-directory-p directory)
-               (directory-files directory nil "\\.\\(?:so\\|dylib\\)\\'")
-               (treesit-language-available-p language))
+      (or (be/grammar-ready-p language)
+          (if (not noninteractive)
+              (progn (be/ensure-tool (format "grammar:%s" language) nil be/grammar-ready-function) nil)
           (unless (memq language be/grammar-failures)
             (condition-case err
                 (let ((treesit-language-source-alist (list source)))
@@ -79,7 +97,7 @@ Do not repeatedly retry a failed download in the same session."
               (error
                (push language be/grammar-failures)
                (display-warning 'be-assets (error-message-string err) :warning)
-               nil)))))))
+               nil))))))))
 
 (defvar be/fonts-ready nil)
 

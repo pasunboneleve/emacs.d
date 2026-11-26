@@ -9,8 +9,10 @@
     (add-to-list 'eglot-server-programs '(typst-ts-mode . ("tinymist")))))
 (use-package typst-watch
   :after typst-ts-mode
+  :ensure-system-package typst
   :ensure (:host github :repo "pasunboneleve/typst-watch"))
 (add-hook 'typst-ts-mode-hook #'be/eglot-ensure)
+(be/command-tools 'typst-watch-start '("typst"))
 
 (provide 'typst-config)
 ;;; typst-config.el ends here

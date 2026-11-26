@@ -17,8 +17,10 @@ creation and reuse, package bootstrap, first-use file modes and tree-sitter
 grammars, and ordinary startup with native compilation enabled where
 available. A global Git SSH rewrite exercises HTTPS fallback without keys.
 The tests also assert that unrelated language packages stay uninstalled.
-Language-server startup is stubbed in the first-use test; this suite does
-not provision SDKs or authenticate services. GUI font installation is tested
+The file-mode test stubs server startup; a separate CLI smoke check provisions
+the SDKs, initializes Tinymist/JDTLS/OmniSharp over LSP, and renders a Mermaid
+SVG using its browser. It does not authenticate external services or build
+projects. GUI font installation is tested
 through simulated frame callbacks, not a graphical desktop.
 
 Run the same suite from the repository root, with Emacs, Git, GnuPG, curl,

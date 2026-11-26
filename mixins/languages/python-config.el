@@ -5,7 +5,13 @@
 (defun be/python-uv ()
   "Activate the local Python environment when uv is available."
   (unless (file-remote-p default-directory)
-    (when (be/ensure-tool 'uv)
+    (when (be/ensure-tool 'uv nil
+                          (let ((buffer (current-buffer)))
+                            (lambda ()
+                              (when (buffer-live-p buffer)
+                                (with-current-buffer buffer
+                                  (when (derived-mode-p 'python-mode 'python-ts-mode)
+                                    (be/python-uv)))))))
       (require 'uv-mode)
       (uv-mode-auto-activate-hook))))
 
@@ -27,5 +33,6 @@
                '((python-mode python-ts-mode) . ("pyright-langserver" "--stdio"))))
 (add-hook 'python-mode-hook #'be/eglot-ensure)
 (add-hook 'python-ts-mode-hook #'be/eglot-ensure)
+(be/command-tools 'ruff-format-buffer '("ruff"))
 (provide 'python-config)
 ;;; python-config.el ends here

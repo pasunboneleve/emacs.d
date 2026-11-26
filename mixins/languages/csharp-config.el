@@ -12,10 +12,12 @@
  (with-eval-after-load 'eglot
    (add-to-list 'eglot-server-programs
                 `((csharp-mode csharp-ts-mode)
-                  . ,(lambda (_interactive project)
+                  . ,(lambda (_interactive)
                        ;; OmniSharp may start from the wrapper's cwd.
                        ;; Force the actual project root so it loads the .csproj/.sln.
-                      (list "omnisharp" "-lsp" "-s" (project-root project)))))))
+                      (list "omnisharp" "-lsp" "-s"
+                            (if-let ((project (project-current)))
+                                (project-root project) default-directory)))))))
 
 (use-package csproj-mode
   :mode ("\\.csproj\\'" . csproj-mode))

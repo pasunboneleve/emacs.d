@@ -22,15 +22,29 @@
     ((rust-mode rust-ts-mode rustic-mode) . rust-analyzer)
     ((terraform-mode) . terraform-ls)
     ((helm-mode) . helm_ls)
-    ((typst-ts-mode) . tinymist))
+    ((yaml-mode yaml-ts-mode) . yaml-language-server)
+    ((typst-ts-mode) . tinymist)
+    ((java-mode java-ts-mode) . jdtls)
+    ((csharp-mode csharp-ts-mode) . omnisharp)
+    ((scala-mode) . metals)
+    ((haskell-mode haskell-ts-mode) . haskell-language-server-wrapper)
+    ((elm-mode) . elm-language-server))
   "Servers which can be provisioned automatically for Eglot.")
 
 (defun be/eglot-ensure ()
   "Start Eglot only after its configured language server is available."
   (unless (file-remote-p default-directory)
     (let ((tool (cdr (cl-find-if (lambda (entry) (memq major-mode (car entry)))
-                               be/language-tools))))
-      (when (or (null tool) (be/ensure-tool tool))
+                               be/language-tools)))
+          (buffer (current-buffer))
+          (mode major-mode))
+      (when (or (null tool)
+                (be/ensure-tool
+                 tool nil
+                 (lambda ()
+                   (when (buffer-live-p buffer)
+                     (with-current-buffer buffer
+                       (when (eq major-mode mode) (be/eglot-ensure)))))))
         (condition-case err
             (eglot-ensure)
           (error (display-warning 'eglot (error-message-string err) :warning)))))))

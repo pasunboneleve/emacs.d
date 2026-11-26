@@ -24,7 +24,13 @@ Generated keys have no passphrase and depend on OS account protection;
 they are local storage keys, never exported or used as an identity."
   (interactive)
   (condition-case err
-      (when (be/ensure-tool 'gpg)
+      (when (be/ensure-tool
+             'gpg nil
+             (lambda ()
+               (when (be/setup-encryption)
+                 (dolist (file '("custom.el.gpg" "custom-local.el.gpg"
+                                 "mixins/communication.el.gpg" "mixins/safe.el.gpg"))
+                   (be/load-optional-user-file (expand-file-name file user-emacs-directory))))))
         (let ((key (be/encryption-key)))
           (unless key
             (be/run-installer

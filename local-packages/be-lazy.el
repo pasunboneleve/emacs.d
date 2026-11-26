@@ -7,6 +7,7 @@
 (defvar be/loaded-modules nil)
 (defvar be/lazy-associations nil)
 (defvar be/allow-tool-installation)
+(defvar be/grammar-ready-function)
 
 (defun be/restore-lazy-modes (&optional _package)
   "Keep every registered entry point ahead of newly installed autoloads."
@@ -49,7 +50,16 @@ When GRAMMAR cannot be installed, use FALLBACK instead of TARGET."
        (condition-case err
            (progn
              (be/load-module ,file)
-             (if ,(if grammar `(cl-every #'be/ensure-grammar ',(if (listp grammar) grammar (list grammar))) t)
+             (if ,(if grammar
+                      `(let* ((buffer (current-buffer)) (file buffer-file-name)
+                              (be/grammar-ready-function
+                               (lambda ()
+                                 (when (buffer-live-p buffer)
+                                   (with-current-buffer buffer
+                                     (when (and (equal buffer-file-name file)
+                                                (eq major-mode ',(or fallback 'fundamental-mode)))
+                                       (set-auto-mode)))))))
+                         (cl-every #'be/ensure-grammar ',(if (listp grammar) grammar (list grammar)))) t)
                  (funcall #',target)
                (funcall #',(or fallback 'fundamental-mode))))
          (error

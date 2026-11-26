@@ -29,7 +29,7 @@
                             haskell-compile-stack-build-command
                             "stack test")
                            (haskell-compile))))
-  :ensure-system-package (fourmolu . "stack --jobs 2 install fourmolu"))
+  :ensure-system-package (fourmolu stack cabal))
 
 (provide 'haskell-config)
 ;;; haskell-config.el ends here.

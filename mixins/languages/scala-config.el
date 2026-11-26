@@ -22,6 +22,7 @@
 
 ;; Enable sbt mode for executing sbt commands
 (use-package sbt-mode
+  :ensure-system-package sbt
   :commands sbt-start sbt-command
   :config
   (defun fix-sbt-movement ()
@@ -41,6 +42,9 @@
           "-J-Xss4m" ; thread stack size
           "-Dmetals.client=emacs")) ; configure metals for emacs
   :hook (sbt-mode . fix-sbt-movement))
+
+(be/command-tools 'sbt-start '("sbt"))
+(be/command-tools 'sbt-command '("sbt"))
 
 (provide 'scala-config)
 ;;; scala-config.el ends here

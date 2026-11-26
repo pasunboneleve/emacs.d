@@ -57,7 +57,8 @@
 (require 'be-packages)
 
 ;; GUI launches on macOS do not inherit the shell's PATH.
-(dolist (directory '("/opt/homebrew/bin" "/usr/local/bin" "~/go/bin" "~/.local/bin" "~/.cargo/bin"))
+(dolist (directory '("/opt/homebrew/bin" "/usr/local/bin" "~/go/bin" "~/.local/bin" "~/.cargo/bin"
+                    "~/.ghcup/bin" "~/.cabal/bin"))
   (let ((path (expand-file-name directory)))
     (add-to-list 'exec-path path)
     (setenv "PATH" (concat path path-separator (getenv "PATH")))))

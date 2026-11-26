@@ -153,6 +153,8 @@ No key values are ever printed."
   (unless (executable-find "uv")
     (be/ensure-tool 'uv)))
 
+(be/command-tools 'aidermacs-run '("aider" "cmake" "libtool" "cc" "make"))
+
 (defun aidermacs-copy-clean-code (beg end)
   "Copy region and strip internal newlines (fake breaks)
 between BEG and END."

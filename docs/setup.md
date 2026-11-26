@@ -34,6 +34,10 @@ First use can take time and needs network access. Failures appear in
 failure leaves basic editing available. Remote files never trigger local
 system-tool installation or automatic server provisioning.
 
+CLI downloads and builds run in a serial background queue with mode-line
+progress. See [First-use CLI tools](tools.md) for installation routes, SDK
+isolation, licensing, retry commands, and the remaining environment requirements.
+
 ## Package compatibility
 
 Installation is bounded in Emacs itself: `elpaca-queue-limit` allows two package
