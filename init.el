@@ -177,7 +177,6 @@ queue after all declarations have been read."
     (load (locate-library (symbol-name library)) nil 'nomessage)))
 
 (use-package delight
-  :ensure (:wait t)
   :demand t
   :config
   (delight '((which-key-mode nil t)
@@ -185,7 +184,7 @@ queue after all declarations have been read."
              (eldoc-mode nil t))))
 
 (use-package compat
-  :ensure (:wait t)
+  :ensure nil
   :demand t)
 
 ;; add modules within this directory to the scope
@@ -465,7 +464,6 @@ queue after all declarations have been read."
        (remove nil matches)))
 
 (use-package treemacs
-  :ensure (:wait t)
   :demand t
   :custom
   (treemacs-show-hidden-files t)

@@ -131,7 +131,6 @@
          ("C-h F" . helpful-function)))
 
 (use-package all-the-icons
-  :ensure (:wait t)
   :demand t)
 
 (use-package all-the-icons-dired
@@ -139,7 +138,7 @@
   :hook (dired-mode . all-the-icons-dired-mode))
 
 (use-package nerd-icons
-  :ensure (:wait t :files (:defaults "data" "fonts"))
+  :ensure (:files (:defaults "data" "fonts"))
   :demand t)
 
 (declare-function treemacs-load-theme "treemacs")

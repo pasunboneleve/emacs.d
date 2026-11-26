@@ -191,7 +191,7 @@
           (with-temp-file (expand-file-name "libtree-sitter-python.so" directory))
           (cl-letf (((symbol-function 'be/grammar-directory) (lambda (&rest _) directory))
 		    ((symbol-function 'treesit-available-p) (lambda () t))
-		    ((symbol-function 'treesit-language-available-p) (lambda (_) t))
+                    ((symbol-function 'treesit-language-available-p) (lambda (&rest _) t))
 		    ((symbol-function 'treesit-install-language-grammar) (lambda (_) (ert-fail "Unneeded build"))))
             (should (be/ensure-grammar 'python))))
       (delete-directory directory t))))
