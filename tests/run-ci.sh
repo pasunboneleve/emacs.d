@@ -20,6 +20,7 @@ done
 cd "$EMACS_TEST_DIRECTORY"
 emacs --version | head -n 1
 emacs -Q --batch -l tests/check-lisp.el 2>&1 | tee "$test_root/logs/syntax.log"
+emacs -Q --batch -l tests/startup-default-tests.el -f ert-run-tests-batch-and-exit 2>&1 | tee "$test_root/logs/startup-defaults.log"
 emacs -Q --batch -l tests/portability-tests.el -f ert-run-tests-batch-and-exit 2>&1 | tee "$test_root/logs/portability.log"
 emacs -Q --batch -l tests/tool-installation-tests.el -f ert-run-tests-batch-and-exit 2>&1 | tee "$test_root/logs/tool-installation.log"
 emacs -Q --batch -l tests/secrets-integration.el -f ert-run-tests-batch-and-exit 2>&1 | tee "$test_root/logs/secrets.log"

@@ -63,6 +63,18 @@ libraries cannot supply features missing from the Emacs core. Updates may
 occasionally need another explicit exception here; the configuration does not
 guess an arbitrary older revision or disable dependency checks.
 
+`early-init.el` sets lexical binding as the global default. Explicit file-local
+binding declarations still take precedence, and existing compiled libraries
+keep their compiled semantics. Legacy source that implicitly relies on dynamic
+scope can behave differently under this default; it is not a security fix by
+itself. Distribution site files run before the user configuration, so their
+missing-declaration warnings can remain.
+
+Installer network libraries load only when an installer needs them, keeping
+their `map` dependency out of the early bootstrap. Emacs can already have
+`seq` and `eldoc` loaded before user initialization; their compatibility
+upgrades remain necessary on older supported versions.
+
 Use `M-x elpaca-update-all` for package updates. For failed packages, inspect
 `M-x elpaca-log`, fix the reported cause, and use `M-x elpaca-rebuild`. Then
 revisit the file or invoke its first-use command. Installed packages from older

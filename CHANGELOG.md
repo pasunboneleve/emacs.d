@@ -6,6 +6,9 @@
 
 ### Changed
 
+- Use lexical binding as the global default while honoring explicit file
+  declarations. Load CLI installer network libraries only when needed,
+  avoiding premature activation of their `map` dependency.
 - Queue startup package declarations before processing their dependencies,
   avoiding duplicate-order failures in normal and daemon startup. Use built-in
   terminal completion on Emacs 31 instead of the Corfu terminal extension.
