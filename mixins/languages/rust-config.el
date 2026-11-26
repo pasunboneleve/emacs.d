@@ -9,6 +9,7 @@
   :after rust-mode
   :custom
   (rustic-lsp-client 'eglot)
+  (rustic-lsp-setup-p nil)
   (rustic-format-on-save t)
   (rustic-cargo-use-last-stored-arguments t)
   :config

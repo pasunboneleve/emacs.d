@@ -226,7 +226,9 @@ Only replace an earlier private installation after extraction finds the binary."
                             (error "Install the vterm Lisp package before its native module")))
              (vterm-always-compile-module t))
          (add-to-list 'load-path directory)
-         (be/with-build-limits #'require 'vterm)))
+         (require 'be-git)
+         (be/with-git-urls '("https://github.com/Sbozzolo/libvterm-mirror.git")
+                           #'be/with-build-limits #'require 'vterm)))
       ((pred (lambda (tool) (assoc tool be/npm-tools))) (be/install-npm-tool name))
       ("node"
        (let ((node (be/node-runtime)))

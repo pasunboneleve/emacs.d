@@ -104,7 +104,9 @@
       (let ((command (be/tool-worker-command "tinymist" nil)))
         (should (equal (car command) "systemd-run"))
         (should (member "MemoryMax=2G" command))
-        (should (member "CPUQuota=100%" command))))))
+        (should (member "CPUQuota=100%" command))
+        (should (member "nice" command))
+        (should-not (member "Nice=10" command))))))
 
 (ert-deftest be/pending-grammar-is-not-a-failure ()
   (let ((be/grammar-failures nil) (noninteractive nil) requested)
