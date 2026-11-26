@@ -41,7 +41,7 @@ installation and reports a failing exit status when it cannot complete.
 | Racket, Graphviz | `racket`, `dot` | Native package manager |
 | Dhall | `dhall` | Official release binary; Cabal build on Linux ARM64 |
 | Go, Rust, Terraform | gopls, rust-analyzer, terraform-ls | Native packages, rustup, Go |
-| Aider | `aider`, Vterm native backend | uv tool; backend compiled in the worker before loading the AI module |
+| Aider | `aider`, Vterm native backend | uv tool with Python 3.12; backend compiled in the worker before loading the AI module |
 
 Only tools required by the active feature are requested. For example, Mermaid
 preview does not install on opening ordinary Markdown, and opening Emacs Lisp

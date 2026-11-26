@@ -275,5 +275,19 @@
             (should (equal (be/java-runtime) binary))))
       (delete-directory root t))))
 
+(ert-deftest be/cancelling-authentication-releases-the-installation-queue ()
+  (let ((be/tool-current nil) (be/tool-process nil) (be/tool-queue '("native" "dependent"))
+        (be/tool-installers (make-hash-table :test 'equal))
+        (be/tool-callbacks (make-hash-table :test 'equal)))
+    (cl-letf (((symbol-function 'be/tool-present-p) (lambda (_) nil))
+              ((symbol-function 'be/tool-requirements) (lambda (_) nil))
+              ((symbol-function 'be/native-tool-command) (lambda (&rest _) '("true")))
+              ((symbol-function 'start-file-process) (lambda (&rest _) (signal 'quit nil)))
+              ((symbol-function 'display-warning) #'ignore))
+      (be/start-next-tool)
+      (should-not be/tool-current)
+      (should-not be/tool-process)
+      (should-not be/tool-queue))))
+
 (provide 'tool-installation-tests)
 ;;; tool-installation-tests.el ends here

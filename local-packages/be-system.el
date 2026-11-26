@@ -62,7 +62,7 @@
     ("goimports"
      '("go" "install" "golang.org/x/tools/cmd/goimports@latest"))
     ("aider"
-     '("uv" "tool" "install" "--force" "--with-pip" "aider-chat@latest"))
+     '("uv" "tool" "install" "--force" "--python" "python3.12" "--with" "pip" "aider-chat@latest"))
     (_ nil)))
 
 (defun be/system-manager ()

@@ -110,7 +110,11 @@
                 (when (and (eq process be/tool-process)
                            (memq (process-status process) '(exit signal)))
                   (be/tool-finished process "finished"))))))
-        (error (be/finish-tool nil (error-message-string err)))))))
+        (error (be/finish-tool nil (error-message-string err)))
+        (quit
+         (setq be/tool-queue nil)
+         (clrhash be/tool-callbacks)
+         (when be/tool-current (be/finish-tool nil "authentication cancelled")))))))
 
 (defun be/tool-finished (process _event)
   "Handle the final status of installation PROCESS."

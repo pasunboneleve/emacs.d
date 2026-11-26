@@ -145,10 +145,7 @@ No key values are ever printed."
       (apply orig-fun args)))
 
   (advice-add 'aidermacs-run :around #'my/add-api-keys-silently)
-  :ensure-system-package
-  ((cmake)
-   (libtool)
-   (aider . "uv tool install --force --with-pip aider-chat@latest"))
+  :ensure-system-package (cmake libtool aider)
   :init
   (unless (executable-find "uv")
     (be/ensure-tool 'uv)))
