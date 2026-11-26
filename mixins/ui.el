@@ -16,11 +16,12 @@
 ;;
 
 (use-package immortal-scratch
+  :demand t
   :init
   (setq initial-scratch-message "")
   (setq initial-major-mode 'emacs-lisp-mode)
-  :hook
-  (after-init . immortal-scratch-mode))
+  :config
+  (immortal-scratch-mode 1))
 
 (use-package info-colors
   :hook
@@ -131,7 +132,6 @@
          ("C-h F" . helpful-function)))
 
 (use-package all-the-icons
-  :ensure (:wait t)
   :demand t)
 
 (use-package all-the-icons-dired
@@ -139,7 +139,7 @@
   :hook (dired-mode . all-the-icons-dired-mode))
 
 (use-package nerd-icons
-  :ensure (:wait t :files (:defaults "data" "fonts"))
+  :ensure (:files (:defaults "data" "fonts"))
   :demand t)
 
 (declare-function treemacs-load-theme "treemacs")

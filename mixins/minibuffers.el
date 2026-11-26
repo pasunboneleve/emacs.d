@@ -105,7 +105,7 @@
 
 ;; Make corfu popup come up in terminal overlay
 (use-package corfu-terminal
-  :if (not (display-graphic-p))
+  :if (and (< emacs-major-version 31) (not (display-graphic-p)))
   :config
   (corfu-terminal-mode))
 

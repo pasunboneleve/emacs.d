@@ -6,6 +6,9 @@
 
 ### Changed
 
+- Queue startup package declarations before processing their dependencies,
+  avoiding duplicate-order failures in normal and daemon startup. Use built-in
+  terminal completion on Emacs 31 instead of the Corfu terminal extension.
 - Provision missing language servers and configured CLI dependencies on first
   use, including Java, C#, Scala, Haskell, Elm, and Mermaid preview. Run tool
   and grammar installation in a serial background queue with progress and
