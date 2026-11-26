@@ -120,12 +120,8 @@
   ;;;; 4. locate-dominating-file
   ;; (setq consult-project-root-function (lambda () (locate-dominating-file "." ".git")))
 
-;;; Install github cli tool from https://cli.github.com/manual/installation
-(use-package consult-gh
-  :after consult
-  :ensure (consult-gh :host github :repo "armindarvish/consult-gh")
-  :config
-  (setq consult-gh-default-clone-directory "~/src/vendor/"))
+;; GitHub authentication is only needed when opening the GitHub client.
+(be/lazy-command be/github "mixins/minibuffers/github-config.el" consult-gh)
 
 (use-package embark
   :bind

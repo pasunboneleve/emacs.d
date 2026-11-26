@@ -17,7 +17,7 @@
   (org-todo-keywords
    '((sequence "TODO" "IN-PROGRESS" "WONT-DO" "DONE")))
   (org-tag-alist '(("@work" . ?w) ("@emacs" . ?e) ("urbit" . ?u)))
-  :init
+  :config
  (require 'info)
  (add-to-list 'Info-directory-list "~/.config/emacs/elpaca/repos/org-mode/doc")
  (org-babel-do-load-languages
@@ -57,10 +57,8 @@
         (("s-Y" . org-download-screenshot)
          ("s-y" . org-download-yank)))
   :custom (org-download-method 'attach)
-  :init
-  (unless (eq system-type 'darwin)
-    (unless (executable-find "wl-copy")
-      (system-packages-install "wl-clipboard"))))
+  :config
+  (when (getenv "WAYLAND_DISPLAY") (be/ensure-tool 'wl-copy)))
 
 ;; rest
 (use-package verb

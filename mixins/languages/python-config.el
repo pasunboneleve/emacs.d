@@ -1,48 +1,38 @@
-;;; Package --- Summary  -*- lexical-binding: t; -*-
+;;; python-config.el --- Python support -*- lexical-binding: t; -*-
 ;;; Commentary:
-;;; Python configuration
+;; Ruff formats and checks; Eglot uses Pyright.
 ;;; Code:
-
-(add-to-list 'major-mode-remap-alist '(python-mode . python-ts-mode))
+(defun be/python-uv ()
+  "Activate the local Python environment when uv is available."
+  (unless (file-remote-p default-directory)
+    (when (be/ensure-tool 'uv nil
+                          (let ((buffer (current-buffer)))
+                            (lambda ()
+                              (when (buffer-live-p buffer)
+                                (with-current-buffer buffer
+                                  (when (derived-mode-p 'python-mode 'python-ts-mode)
+                                    (be/python-uv)))))))
+      (require 'uv-mode)
+      (uv-mode-auto-activate-hook))))
 
 (use-package uv-mode
   :delight " UV"
-  :hook (python-ts-mode . uv-mode-auto-activate-hook)
-  :ensure-system-package (uv))
-
-(use-package python-isort
-  :after python
-  :hook
-  (python . python-isort-on-save-mode)
-  (python-ts-mode . python-isort-on-save-mode)
-  :init
-  (unless (executable-find "isort")
-    (system-packages-install
-     (if (eq system-type 'darwin) "isort" "python3-isort"))))
-
+  :hook ((python-mode . be/python-uv)
+         (python-ts-mode . be/python-uv)))
 (use-package ruff-format
-  :ensure (ruff-format
-           :type git
-           :host github
-           :repo "JoshHayes/emacs-ruff-format")
-  :hook (python-ts-mode . ruff-format-on-save-mode)
-  :ensure-system-package (ruff))
-
+  :ensure (:host github :repo "JoshHayes/emacs-ruff-format")
+  :hook ((python-mode . ruff-format-on-save-mode)
+         (python-ts-mode . ruff-format-on-save-mode))
+  :ensure-system-package ruff)
 (use-package flymake-ruff
-  :ensure (flymake-ruff
-           :type git
-           :host github
-           :repo "erickgnavar/flymake-ruff")
-  :ensure-system-package (ruff))
-
-(use-package python
-  :mode ("\\.py\\'" . python-ts-mode)
-  :ensure nil
-  :config
+  :ensure (:host github :repo "erickgnavar/flymake-ruff")
+  :hook ((python-mode . flymake-ruff-load)
+         (python-ts-mode . flymake-ruff-load)))
+(with-eval-after-load 'eglot
   (add-to-list 'eglot-server-programs
-               '(python-ts-mode . ("pyright-langserver" "--stdio")))
-  :hook
-  (python-ts-mode . eglot-ensure))
-
+               '((python-mode python-ts-mode) . ("pyright-langserver" "--stdio"))))
+(add-hook 'python-mode-hook #'be/eglot-ensure)
+(add-hook 'python-ts-mode-hook #'be/eglot-ensure)
+(be/command-tools 'ruff-format-buffer '("ruff"))
 (provide 'python-config)
 ;;; python-config.el ends here

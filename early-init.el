@@ -6,14 +6,12 @@
 ;;; no secrets should get saved in plaintext
 (setq auth-sources '("secrets:Login" "~/.authinfo.gpg"))
 
-;; increase this early, decrease later on again
-(setq gc-cons-threshold most-positive-fixnum
-      gc-cons-percentage 0.6)
+;; Cold package installation can outlast startup; keep GC active throughout it.
+(setq gc-cons-threshold (* 64 1024 1024)
+      gc-cons-percentage 0.1)
 
-;; In noninteractive sessions, prioritize non-byte-compiled source files to
-;; prevent the use of stale byte-code. Otherwise, it saves us a little IO time
-;; to skip the mtime checks on every *.elc file.
-(setq load-prefer-newer noninteractive)
+;; Configuration updates must supersede compiled copies in every startup mode.
+(setq load-prefer-newer t)
 
 (unless (or (daemonp) noninteractive)
   ;; Site files tend to use `load-file', which emits "Loading X..." messages in

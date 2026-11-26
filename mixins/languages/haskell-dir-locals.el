@@ -41,7 +41,7 @@
          (haskell-process-type . 'cabal-repl)
          (cabal-project . "./api/cabal-dev.project")
          (haskell-compile-cabal-build-alt-command . "cabal build -j --ghc-option=-ferror-spans --ghc-option=-fdefer-type-errors --builddir=dist-custom-build/dev --project-file=cabal-dev.project")
-         (haskell-compile-cabal-build-command . "cabal build -j --ghc-option=-ferror-spans --ghc-option=-fdefer-type-errors --builddir=dist-custom-build/dev --project-file=cabal-dev.project"))
+         (haskell-compile-cabal-build-command . "cabal build -j --ghc-option=-ferror-spans --ghc-option=-fdefer-type-errors --builddir=dist-custom-build/dev --project-file=cabal-dev.project")))
       (haskell-mode
        . ((haskell-mode-map
            . (let ((map (make-sparse-keymap)))
@@ -62,7 +62,7 @@
                (define-key map (kbd "C-c C-i")
                            'haskell-mode-enable-process-minor-mode)
                (define-key map (kbd "C-c C-s") 'haskell-mode-toggle-scc-at-point)
-               map))))))
+               map)))))
 
 (provide 'dir-locals.el)
 ;;; .dir-locals.el ends here.

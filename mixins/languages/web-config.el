@@ -3,20 +3,12 @@
 ;;; All things web
 ;;; Code:
 
-(add-to-list 'major-mode-remap-alist '(html-mode . html-ts-mode))
-(add-to-list 'major-mode-remap-alist '(css-mode . css-ts-mode))
-(add-to-list 'major-mode-remap-alist '(js-mode . js-ts-mode))
-(add-to-list 'major-mode-remap-alist '(typescript-mode . typescript-ts-mode))
-
 (use-package jtsx
-  :mode (("\\.jsx?\\'" . jtsx-jsx-mode)
-         ("\\.tsx\\'" . jtsx-tsx-mode)
-         ("\\.m?ts\\'" . jtsx-typescript-mode))
   :commands jtsx-install-treesit-language
   :hook ((jtsx-jsx-mode . hs-minor-mode)
          (jtsx-tsx-mode . hs-minor-mode)
          (jtsx-typescript-mode . hs-minor-mode)
-         (jsx-typescript-mode . smartparens-strict-mode)
+         (jtsx-typescript-mode . smartparens-strict-mode)
          (jtsx-tsx-mode . smartparens-strict-mode)
          (jtsx-typescript-mode . smartparens-strict-mode))
 
@@ -61,16 +53,6 @@
   (add-hook 'jtsx-jsx-mode-hook 'jtsx-bind-keys-to-jtsx-jsx-mode-map)
   (add-hook 'jtsx-tsx-mode-hook 'jtsx-bind-keys-to-jtsx-tsx-mode-map))
 
-(use-package js-ts-mode
-  :ensure nil
-  :mode (("\\.cjs\\'" . js-ts-mode)
-         ("\\.mjs\\'" . js-ts-mode))
-  :hook
-  ((js-ts-mode . eglot-ensure)
-   (js-mode . (lambda ()
-                (require 'tide)
-                (tide-setup)))))
-
 (use-package web-mode
   :custom
   (web-mode-markup-indent-offset 2)
@@ -83,15 +65,13 @@
   (web-mode-enable-comment-keywords t)
   (web-mode-enable-current-element-highlight t))
 
-(use-package html-ts-mode
-  :ensure nil
-    :mode (("\\.html?\\'" . html-ts-mode)))
-
-(use-package tide
-  :commands tide-setup
-  :custom
-  (typescript-indent-level 2)
-  (tide-format-options '(:indentSize 2 :tabSize 2)))
+(with-eval-after-load 'eglot
+  (add-to-list 'eglot-server-programs
+               '((js-mode js-ts-mode jtsx-jsx-mode jtsx-tsx-mode jtsx-typescript-mode)
+                 . ("typescript-language-server" "--stdio"))))
+(dolist (hook '(js-mode-hook js-ts-mode-hook jtsx-jsx-mode-hook
+                jtsx-tsx-mode-hook jtsx-typescript-mode-hook))
+  (add-hook hook #'be/eglot-ensure))
 
 (provide 'web-config)
 ;;; web-config.el ends here

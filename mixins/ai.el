@@ -13,7 +13,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (require 'url)
-(require 'secrets)
+(require 'auth-source)
 
 (use-package codex-ide
   :ensure (:type git :host github :repo "dgillis/codex-ide")
@@ -26,6 +26,10 @@
 ;; aidermacs
 
 (use-package vterm ;; best Aidermacs backend
+  :init
+  (be/ensure-tool 'cmake)
+  (be/ensure-tool 'libtool)
+  (setq vterm-always-compile-module t)
   :custom (vterm-copy-mode-remove-fake-newlines t)
   :bind (:map vterm-mode-map
                 ("M-w" . vterm-copy-mode)) ;; Press M-w once to enter copy mode
@@ -141,14 +145,12 @@ No key values are ever printed."
       (apply orig-fun args)))
 
   (advice-add 'aidermacs-run :around #'my/add-api-keys-silently)
-  :ensure-system-package
-  ((cmake)
-   (libtool)
-   (aider . "uv tool install --force --with-pip aider-chat@latest"))
+  :ensure-system-package (cmake libtool aider)
   :init
   (unless (executable-find "uv")
-    (system-packages-install
-     (if (eq system-type 'darwin) "uv" "python-uv"))))
+    (be/ensure-tool 'uv)))
+
+(be/command-tools 'aidermacs-run '("aider" "cmake" "libtool" "cc" "make"))
 
 (defun aidermacs-copy-clean-code (beg end)
   "Copy region and strip internal newlines (fake breaks)

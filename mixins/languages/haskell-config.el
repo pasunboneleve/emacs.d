@@ -12,9 +12,8 @@
 
 (use-package haskell-mode
   :delight "λ"
-  :after haskell-font-lock
   :hook
-  (haskell-mode . eglot-ensure)
+  (haskell-mode . be/eglot-ensure)
   ;; stack install stylish-haskell
   :custom (haskell-stylish-on-save nil)
   :bind (:map haskell-mode-map
@@ -30,7 +29,7 @@
                             haskell-compile-stack-build-command
                             "stack test")
                            (haskell-compile))))
-  :ensure-system-package (fourmolu . "stack install fourmolu"))
+  :ensure-system-package (fourmolu stack cabal))
 
 (provide 'haskell-config)
 ;;; haskell-config.el ends here.

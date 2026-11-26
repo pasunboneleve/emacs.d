@@ -29,6 +29,7 @@
 ;;   :ensure-system-package (gcloud . google-cloud-cli))
 
 (use-package sqlformat
+  :ensure-system-package sqlfluff
   :ensure (sqlformat
            :host github
            :repo "purcell/sqlformat")
@@ -36,6 +37,9 @@
   (sqlformat-command 'sqlfluff)
   (sqlformat-args '("--dialect" "bigquery"))
   :hook (sql-mode . sqlformat-on-save-mode))
+
+(be/command-tools 'sql-postgres '("psql"))
+(be/command-tools 'sqlformat-buffer '("sqlfluff"))
 
 (provide 'sql-config)
 ;;; sql-config.el ends here.
