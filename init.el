@@ -68,10 +68,11 @@
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
 (defvar elpaca-sources-directory (expand-file-name "sources/" elpaca-directory))
-(defvar elpaca-order '(elpaca :inherit nil :repo "https://github.com/progfolio/elpaca.git"
+(defvar elpaca-order '(elpaca :inherit nil :type git :protocol https
+                              :repo "https://github.com/progfolio/elpaca.git"
                               :ref nil :depth 1
                               :files (:defaults "elpaca-test.el" (:exclude "extensions"))
-                              :build (:not elpaca--activate-package)))
+                              :build (:not elpaca--activate-package elpaca-activate)))
 (let* ((repo  (expand-file-name "elpaca/" elpaca-sources-directory))
        (build (expand-file-name "elpaca/" elpaca-builds-directory))
        (order (cdr elpaca-order))
@@ -114,7 +115,8 @@
 (elpaca `(,@elpaca-order))
 
 ;; Recipe menus need URL/auth-source/JSON, which require map during bootstrap.
-(elpaca (map :inherit nil :repo "https://github.com/emacs-straight/map"
+(elpaca (map :inherit nil :type git :protocol https
+             :repo "https://github.com/emacs-straight/map"
              :branch "master" :depth 1 :files (:defaults) :main "map.el"))
 (elpaca-wait)
 

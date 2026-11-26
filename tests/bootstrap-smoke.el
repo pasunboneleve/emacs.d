@@ -11,8 +11,11 @@
 (defvar be/smoke-config-errors nil)
 (defvar be/smoke-map-preloaded (featurep 'map))
 (defvar be/smoke-premature-map nil)
+(defvar be/smoke-redundant-manager nil)
 (advice-add 'display-warning :before
             (lambda (_type text &rest _)
+              (when (string-match-p "elpaca loaded before Elpaca activation" (format "%s" text))
+                (setq be/smoke-redundant-manager t))
               (when (string-match-p "map loaded before Elpaca activation" (format "%s" text))
                 (setq be/smoke-premature-map t))
               (when (string-match-p "Config Error" (format "%s" text))
@@ -54,6 +57,8 @@
   (error "Package configuration failed: %S" be/smoke-config-errors))
 (when (and be/smoke-premature-map (not be/smoke-map-preloaded))
   (error "Bootstrap loaded map before its managed activation"))
+(when be/smoke-redundant-manager
+  (error "Bootstrap redundantly activated the already loaded package manager"))
 (unless (and (bound-and-true-p gcmh-mode) (bound-and-true-p immortal-scratch-mode))
   (error "Startup modes did not activate after their packages became ready"))
 (let ((failed (cl-loop for (id . e) in (elpaca--queued)

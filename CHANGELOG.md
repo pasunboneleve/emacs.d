@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## [1.0.2] - 2026-11-26
+## [1.0.2] - 2026-11-27
 
 ### Fixed
 
@@ -10,7 +10,8 @@
   file declarations and the native loader policy on each supported Emacs.
   Load CLI installer network libraries only when needed, avoiding premature
   activation of their `map` dependency. Activate managed `map` before recipe
-  menus require it during package-manager bootstrap.
+  menus require it during package-manager bootstrap, and skip redundant
+  activation of the already bootstrapped package manager.
 - Keep published tags immutable and record subsequent fixes as distinct patch
   releases with their own version and changelog section.
 
