@@ -523,7 +523,8 @@ queue after all declarations have been read."
 ;;; make a maximized function
 (defun be/open-startup-sidebar ()
   "Open the sidebar in the selected graphical frame once Treemacs is ready."
-  (when (and (display-graphic-p) (featurep 'treemacs))
+  (when (and (display-graphic-p) (frame-parameter nil 'be/layout-ready)
+             (featurep 'treemacs))
     (unless (and (fboundp 'treemacs-current-visibility)
                  (eq (treemacs-current-visibility) 'visible))
       (if (fboundp 'treemacs--read-first-project-path)
@@ -540,6 +541,7 @@ queue after all declarations have been read."
   "Make Emacs frame use all the screen area."
   (when (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
   (split-window-horizontally)
+  (set-frame-parameter nil 'be/layout-ready t)
   (be/open-startup-sidebar))
 
 ;;; that's what emacs-daemon uses
