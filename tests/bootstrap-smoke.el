@@ -20,6 +20,9 @@
                           t 'silent)
             nil))
 (load (expand-file-name "early-init.el" user-emacs-directory) nil t)
+(unless (and (<= gc-cons-threshold (* 64 1024 1024))
+             (<= gc-cons-percentage 0.1))
+  (error "Startup disables or excessively delays garbage collection"))
 (setq inhibit-message nil inhibit-redisplay nil)
 (defvar be/smoke-progress-timer
   (run-with-timer

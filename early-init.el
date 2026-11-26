@@ -6,9 +6,9 @@
 ;;; no secrets should get saved in plaintext
 (setq auth-sources '("secrets:Login" "~/.authinfo.gpg"))
 
-;; increase this early, decrease later on again
-(setq gc-cons-threshold most-positive-fixnum
-      gc-cons-percentage 0.6)
+;; Cold package installation can outlast startup; keep GC active throughout it.
+(setq gc-cons-threshold (* 64 1024 1024)
+      gc-cons-percentage 0.1)
 
 ;; Configuration updates must supersede compiled copies in every startup mode.
 (setq load-prefer-newer t)

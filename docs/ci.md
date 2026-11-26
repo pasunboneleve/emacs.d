@@ -9,6 +9,8 @@ Homebrew Emacs on macOS 15. The stock Fedora and Homebrew versions advance
 with their package repositories. Each job starts without an Emacs package
 cache or private SSH/GPG keys. Elpaca still limits concurrent installations
 to two, and jobs have a 45-minute limit.
+Startup keeps garbage collection active with a 64 MiB allocation threshold;
+this is a collection trigger, not a hard process-memory limit.
 
 The shared runner checks Lisp syntax, portability ERT tests, real GPG key
 creation and reuse, package bootstrap, first-use file modes and tree-sitter

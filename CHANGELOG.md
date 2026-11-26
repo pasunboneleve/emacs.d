@@ -13,6 +13,8 @@
 - Install required system tools through apt, dnf, or Homebrew, with bounded
   build parallelism. Elpaca installs at most two packages concurrently, uses
   shallow clones, and runs at most one native compilation worker.
+  Keep garbage collection active during startup and completion to prevent
+  unbounded memory growth during a cold installation.
 - Prefer working SSH credentials for Git downloads, fall back to HTTPS when
   unavailable, and recheck for credentials later. Existing global SSH rewrites
   no longer prevent public downloads on machines without private keys.

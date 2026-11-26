@@ -252,12 +252,9 @@ queue after all declarations have been read."
             (setq gc-cons-threshold doom-gc-cons-threshold
                   gc-cons-percentage 0.1)))
 
-;; It may also be wise to raise gc-cons-threshold while the minibuffer is active, so the GC
-;; doesn’t slow down expensive commands (or completion frameworks, like helm and ivy). Here
-;; is how Doom does it:
 (defun doom-defer-garbage-collection-h ()
-  "Don't do garbage collection during startup."
-  (setq gc-cons-threshold most-positive-fixnum))
+  "Raise the collection threshold during completion without disabling GC."
+  (setq gc-cons-threshold (* 64 1024 1024)))
 
 (defun doom-restore-garbage-collection-h ()
   "Defer it so that commands launched immediately after will enjoy the benefits."
