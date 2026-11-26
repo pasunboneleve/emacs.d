@@ -5,6 +5,7 @@
 (require 'json)
 (require 'url)
 (require 'url-handlers)
+(defvar vterm-always-compile-module)
 
 (defconst be/npm-tools
   '(("typescript-language-server" "typescript-language-server" "typescript")
@@ -18,7 +19,7 @@
 (defconst be/managed-tools
   (append '("tinymist" "typst" "helm_ls" "jdtls" "omnisharp" "dotnet" "dotnet11" "cs" "node"
     "metals" "sbt" "scalafmt" "ghcup" "ghc" "cabal" "stack"
-    "haskell-language-server-wrapper" "fourmolu" "google-java-format" "csharpier" "typstyle" "dhall")
+    "haskell-language-server-wrapper" "fourmolu" "google-java-format" "csharpier" "typstyle" "dhall" "vterm-module")
           (mapcar #'car be/npm-tools)))
 
 (defun be/tool-directory (name)
@@ -152,7 +153,7 @@ Only replace an earlier private installation after extraction finds the binary."
             (set-file-modes binary #o755)
             (let ((relative (file-relative-name binary staging)))
               (when (file-directory-p target) (delete-directory target t))
-              (rename-file staging target)
+              (rename-file staging (directory-file-name target))
               (setq staging nil)
               (expand-file-name relative target))))
       (delete-file archive)
@@ -189,6 +190,14 @@ Only replace an earlier private installation after extraction finds the binary."
   "Install the official user-local distribution of NAME."
   (pcase-let ((`(,os ,arch) (be/tool-platform)))
     (pcase name
+      ("vterm-module"
+       (let ((directory (or (getenv "BE_TOOL_VTERM_DIRECTORY")
+                            (when-let ((library (locate-library "vterm")))
+                              (file-name-directory library))
+                            (error "Install the vterm Lisp package before its native module")))
+             (vterm-always-compile-module t))
+         (add-to-list 'load-path directory)
+         (be/with-build-limits #'require 'vterm)))
       ((pred (lambda (tool) (assoc tool be/npm-tools))) (be/install-npm-tool name))
       ("node"
        (let ((node (be/node-runtime)))

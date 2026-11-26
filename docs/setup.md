@@ -130,15 +130,15 @@ Eglot is the only configured language-server client; Tide is removed and Rustic
 is configured for Eglot. Python uses Pyright, JavaScript and TypeScript use
 typescript-language-server, Go uses gopls, and Rust uses rust-analyzer.
 Executable provisioning is centralized in `local-packages/be-system.el`.
-Python tools use uv, Node tools use a user-local npm prefix, and system packages
-use the native manager. Existing project environments remain usable through
-envrc. Some ecosystems, including Java, Scala, and C#, still require their SDK
-and server to be supplied by the machine or project environment.
-Java uses Eglot's normal JDTLS discovery rather than machine-specific JDK paths.
+Python formatters use uv; npm-based tools, including Pyright, use private Node.
+System packages use the native manager. Java, Scala, and C# can provision
+their editor SDKs and servers automatically without changing project SDK
+settings. Existing project environments remain usable through envrc.
+See [tools.md](tools.md) for the complete installation routes and limits.
 
 ## Validation
 
-Run the three checks in [../README.md](../README.md). Behavior tests fake process
+Run the checks in [../README.md](../README.md). Behavior tests fake process
 and network boundaries; the encryption test creates real disposable keyrings.
 The Lisp reader check includes both startup and deferred configuration files.
 Newer source always takes precedence over older bytecode during startup, so

@@ -716,7 +716,23 @@ queue after all declarations have been read."
 (be/lazy-command be/agent-other-file "mixins/ai.el" agent-shell-send-other-file)
 (be/lazy-command be/agent-current-file "mixins/ai.el" agent-shell-send-current-file)
 (be/lazy-command be/codex "mixins/ai.el" codex-ide-menu)
-(be/lazy-command be/aider "mixins/ai.el" aidermacs-transient-menu)
+(be/lazy-command be/aider-open "mixins/ai.el" aidermacs-transient-menu)
+(defun be/aider ()
+  "Prepare Aider and Vterm in the background, then open the AI menu."
+  (interactive)
+  (let* ((buffer (current-buffer)) (tick (buffer-chars-modified-tick))
+         (open (lambda ()
+                 (when (buffer-live-p buffer)
+                   (with-current-buffer buffer
+                     (if (= tick (buffer-chars-modified-tick))
+                         (be/aider-open)
+                       (message "Aider is ready; invoke be/aider again in the updated buffer"))))))
+         (ready (lambda () (when (be/ensure-tool "vterm-module" nil open) (funcall open)))))
+    ;; Queue only the backend package first; loading the AI module earlier can
+    ;; require Vterm and compile its module before the prerequisites are ready.
+    (eval `(elpaca vterm (funcall ',ready)))
+    (elpaca-process-queues)))
+(be/command-tools 'be/aider '("aider" "cmake" "libtool" "cc" "make"))
 (global-set-key (kbd "C-c a") #'be/aider)
 (be/lazy-command be/gptel "mixins/ai.el" gptel)
 (global-set-key (kbd "C-c C-;") #'be/codex)

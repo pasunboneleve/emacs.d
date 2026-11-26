@@ -90,6 +90,8 @@
                 (goto-char (point-max)) (insert (format "\nInstalling %s\n" name)))
               (setenv "BE_TOOL_EMACS_DIRECTORY" user-emacs-directory)
               (setenv "BE_TOOL_WORKER" "1")
+              (when-let ((library (locate-library "vterm")))
+                (setenv "BE_TOOL_VTERM_DIRECTORY" (file-name-directory library)))
               (if command
                   (progn
                     (when (equal (car command) "sudo")
@@ -145,8 +147,8 @@
                        (format "Could not install %s (%s). See *Emacs dependency installation*. Retry with M-x be/install-tool."
                                name detail) :warning))
     (remhash name be/tool-callbacks)
-    (remhash name be/tool-installers)
-    (run-at-time 0 nil #'be/start-next-tool)))
+    (when success (remhash name be/tool-installers))
+    (when be/tool-queue (run-at-time 0 nil #'be/start-next-tool))))
 
 (defun be/install-tool (name)
   "Install or retry executable NAME, reporting progress without blocking editing."

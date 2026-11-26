@@ -59,6 +59,8 @@
      (list "rustup" "component" "add" name))
     ("goimports"
      '("go" "install" "golang.org/x/tools/cmd/goimports@latest"))
+    ("aider"
+     '("uv" "tool" "install" "--force" "--with-pip" "aider-chat@latest"))
     (_ nil)))
 
 (defun be/system-manager ()
@@ -178,7 +180,7 @@ and validation run synchronously so their exit status reports failures."
     ("stack" "ghcup") ("haskell-language-server-wrapper" "ghcup" "ghc")
     ("ruff" "uv") ("isort" "uv") ("black" "uv") ("sqlfluff" "uv")
     ("cmake-format" "uv") ("pyright-langserver" "tar") ("aider" "uv")
-    ("node" "tar")
+    ("node" "tar") ("vterm-module" "cmake" "libtool" "cc" "make")
     ("typescript-language-server" "tar") ("yaml-language-server" "tar")
     ("elm-language-server" "tar") ("elm" "tar")
     ("elm-format" "tar") ("prettier" "tar") ("mmdc" "tar" "@mermaid")
@@ -220,14 +222,20 @@ Private completion markers avoid reinstalling a package bundle at every startup.
         ((string-prefix-p "grammar:" name)
          (require 'be-assets)
          (be/grammar-ready-p (intern (substring name 8))))
+        ((equal name "vterm-module")
+         (when-let ((library (locate-library "vterm")))
+           (and module-file-suffix
+                (file-exists-p (expand-file-name (concat "vterm-module" module-file-suffix)
+                                                (file-name-directory library))))))
         ((equal name "dotnet11")
          (let ((private (expand-file-name "dotnet" (be/tool-directory "dotnet"))))
            (cl-find-if
             (lambda (dotnet)
-                 (and dotnet (file-executable-p dotnet) (condition-case nil
-                                      (cl-some (lambda (line) (>= (string-to-number line) 11))
-                                               (process-lines dotnet "--list-sdks"))
-                                    (error nil))))
+              (when (and dotnet (file-executable-p dotnet))
+                (let ((sdks (expand-file-name "sdk" (file-name-directory (file-truename dotnet)))))
+                  (and (file-directory-p sdks)
+                       (cl-some (lambda (version) (>= (string-to-number version) 11))
+                                (directory-files sdks nil "\\`[0-9]+\\.[0-9]"))))))
             (list private (executable-find "dotnet")))))
         (t (executable-find name))))
 

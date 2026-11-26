@@ -175,5 +175,36 @@
           (should (equal (with-temp-buffer (insert-file-contents target) (buffer-string)) "original contents")))
       (delete-directory root t))))
 
+(ert-deftest be/retry-retains-a-custom-installer ()
+  (let ((be/tool-current "aider") (be/tool-process nil) (be/tool-queue nil)
+        (be/tool-installers (make-hash-table :test 'equal))
+        (be/tool-callbacks (make-hash-table :test 'equal))
+        (recipe "uv tool install aider-chat"))
+    (puthash "aider" recipe be/tool-installers)
+    (cl-letf (((symbol-function 'be/tool-present-p) (lambda (_) nil))
+              ((symbol-function 'display-warning) #'ignore))
+      (be/finish-tool nil "network failure")
+      (should (equal (gethash "aider" be/tool-installers) recipe)))
+    (should (equal (car (be/tool-installer "aider")) "uv"))))
+
+(ert-deftest be/archive-installs-into-a-new-private-directory ()
+  (let* ((root (make-temp-file "emacs-archive-test-" t))
+         (process-environment (copy-sequence process-environment))
+         (default-directory (file-name-as-directory root))
+         (tree (expand-file-name "archive-tree/bin" root))
+         (archive (expand-file-name "fixture.tar.gz" root)))
+    (unwind-protect
+        (progn
+          (setenv "HOME" root)
+          (make-directory tree t)
+          (with-temp-file (expand-file-name "fixture" tree)
+            (insert "#!/usr/bin/env bash\nset -euo pipefail\nexit 0\n"))
+          (should (zerop (call-process "tar" nil nil nil "-czf" archive "-C" (file-name-directory tree) "bin")))
+          (cl-letf (((symbol-function 'url-copy-file) (lambda (_url destination &rest _) (copy-file archive destination t))))
+            (let ((binary (be/extract-tool "fixture" "https://example.invalid/archive" "fixture.tar.gz" "fixture")))
+              (should (file-executable-p binary))
+              (should (zerop (call-process binary))))))
+      (delete-directory root t))))
+
 (provide 'tool-installation-tests)
 ;;; tool-installation-tests.el ends here
