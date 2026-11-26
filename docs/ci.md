@@ -28,6 +28,13 @@ and a C/C++ toolchain installed:
 bash tests/run-ci.sh
 ```
 
+On a Linux workstation with systemd, limit the whole test process tree to
+2 GiB of memory and disable swap for that scope:
+
+```sh
+systemd-run --user --scope -p MemoryMax=2G -p MemorySwapMax=0 bash tests/run-ci.sh
+```
+
 The script copies tracked Lisp/encrypted files into a temporary configuration
 and gives it a separate home and keyring. Set `CI_TEST_ROOT` to a new absolute
 directory to choose its location. Logs remain there after execution; GPG
