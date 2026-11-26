@@ -2,13 +2,20 @@
 
 ## [Unreleased]
 
-## [1.0.0] - 2026-11-26
+## [1.0.1] - 2026-11-26
 
-### Changed
+### Fixed
 
 - Queue startup package declarations before processing their dependencies,
   avoiding duplicate-order failures in normal and daemon startup. Use built-in
   terminal completion on Emacs 31 instead of the Corfu terminal extension.
+- Enable startup modes when their packages become ready and open the sidebar
+  after both package activation and frame layout. Exercise the real startup
+  phase in cross-platform bootstrap tests.
+
+## [1.0.0] - 2026-11-26
+
+### Changed
 - Provision missing language servers and configured CLI dependencies on first
   use, including Java, C#, Scala, Haskell, Elm, and Mermaid preview. Run tool
   and grammar installation in a serial background queue with progress and
