@@ -48,6 +48,8 @@
 (setq inhibit-message nil inhibit-redisplay nil)
 (when be/smoke-config-errors
   (error "Package configuration failed: %S" be/smoke-config-errors))
+(unless (and (bound-and-true-p gcmh-mode) (bound-and-true-p immortal-scratch-mode))
+  (error "Startup modes did not activate after their packages became ready"))
 (let ((failed (cl-loop for (id . e) in (elpaca--queued)
                        when (eq (elpaca<-status e) 'failed) collect id)))
   (when failed (error "Package installation failed: %S" failed)))

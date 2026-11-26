@@ -16,11 +16,12 @@
 ;;
 
 (use-package immortal-scratch
+  :demand t
   :init
   (setq initial-scratch-message "")
   (setq initial-major-mode 'emacs-lisp-mode)
-  :hook
-  (after-init . immortal-scratch-mode))
+  :config
+  (immortal-scratch-mode 1))
 
 (use-package info-colors
   :hook

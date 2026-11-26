@@ -266,6 +266,7 @@ queue after all declarations have been read."
 
 ;; garbage collection is hard, let a library do it
 (use-package gcmh
+  :demand t
   :delight (gcmh-mode)
   :commands (gcmh-mode)
   :functions (gcmh-idle-garbage-collect)
@@ -274,8 +275,8 @@ queue after all declarations have been read."
   (gcmh-auto-idle-delay-factor 10)
   (gcmh-high-cons-threshold (* 16 1024 1024))
   (gcmh-verbose nil)
-  :hook
-  (emacs-startup-hook . gcmh-mode))
+  :config
+  (gcmh-mode 1))
 
 (setq byte-compile-warnings '(not obsolete))
 (setq warning-suppress-log-types '((comp) (bytecomp)))
@@ -520,19 +521,26 @@ queue after all declarations have been read."
       (expand-file-name "~")))
 
 ;;; make a maximized function
+(defun be/open-startup-sidebar ()
+  "Open the sidebar in the selected graphical frame once Treemacs is ready."
+  (when (and (display-graphic-p) (featurep 'treemacs))
+    (unless (and (fboundp 'treemacs-current-visibility)
+                 (eq (treemacs-current-visibility) 'visible))
+      (if (fboundp 'treemacs--read-first-project-path)
+          (cl-letf (((symbol-function 'treemacs--read-first-project-path)
+                     #'be/startup-treemacs-root))
+            (treemacs))
+        (treemacs)))))
+
+(with-eval-after-load 'treemacs
+  (dolist (frame (frame-list))
+    (with-selected-frame frame (be/open-startup-sidebar))))
+
 (defun my-maximized-frame-layout ()
   "Make Emacs frame use all the screen area."
-  (progn
-    (when (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
-    (split-window-horizontally)
-    (when (fboundp 'treemacs)
-      (unless (and (fboundp 'treemacs-current-visibility)
-                   (eq (treemacs-current-visibility) 'visible))
-        (if (fboundp 'treemacs--read-first-project-path)
-            (cl-letf (((symbol-function 'treemacs--read-first-project-path)
-                       #'be/startup-treemacs-root))
-              (treemacs))
-          (treemacs))))))
+  (when (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
+  (split-window-horizontally)
+  (be/open-startup-sidebar))
 
 ;;; that's what emacs-daemon uses
 (add-hook
