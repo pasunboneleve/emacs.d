@@ -76,7 +76,9 @@ before user configuration, so their missing-declaration warnings can remain.
 
 Installer network libraries load only when an installer needs them, keeping
 their `map` dependency out of helper loading. The bootstrap activates managed
-`map` before recipe menus load URL/authentication/JSON libraries. Emacs can already have
+`map` before recipe menus or the log viewer load URL/authentication/JSON.
+Initial events and warnings are retained; only creating the log viewer is
+deferred during that prerequisite phase. Emacs can already have
 `seq` and `eldoc` loaded before user initialization; their compatibility
 upgrades remain necessary on older supported versions.
 

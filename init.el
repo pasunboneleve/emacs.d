@@ -112,13 +112,13 @@
 (elpaca-subscribe 'finished #'be/restore-lazy-modes)
 (add-hook 'elpaca-recipe-functions #'be/package-compatibility)
 (add-hook 'after-init-hook #'elpaca-process-queues)
-(elpaca `(,@elpaca-order))
-
-;; Recipe menus need URL/auth-source/JSON, which require map during bootstrap.
-(elpaca (map :inherit nil :type git :protocol https
-             :repo "https://github.com/emacs-straight/map"
-             :branch "master" :depth 1 :files (:defaults) :main "map.el"))
-(elpaca-wait)
+;; The log viewer also needs map; record events but open it after this phase.
+(let ((elpaca-log-functions nil))
+  (elpaca `(,@elpaca-order))
+  (elpaca (map :inherit nil :type git :protocol https
+               :repo "https://github.com/emacs-straight/map"
+               :branch "master" :depth 1 :files (:defaults) :main "map.el"))
+  (elpaca-wait))
 
 (defun be/elpaca-drop-plist-key (plist key)
   "Return PLIST without KEY."
