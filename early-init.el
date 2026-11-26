@@ -3,6 +3,9 @@
 ;;; early init file
 ;;; Code:
 
+;; File loading binds this temporarily; keep the default after it unwinds.
+(set-default-toplevel-value 'lexical-binding t)
+
 ;;; no secrets should get saved in plaintext
 (setq auth-sources '("secrets:Login" "~/.authinfo.gpg"))
 

@@ -2,9 +2,8 @@
 ;;; Commentary:
 ;; These installers run in a bounded background Emacs, never the editor thread.
 ;;; Code:
-(require 'json)
-(require 'url)
-(require 'url-handlers)
+(defvar url-request-extra-headers)
+(defvar url-http-response-status)
 (defvar vterm-always-compile-module)
 
 (defconst be/npm-tools
@@ -48,6 +47,7 @@
 
 (defun be/upstream-text (url)
   "Retrieve a small upstream version manifest from URL."
+  (require 'url)
   (let ((buffer (url-retrieve-synchronously url t t 30)))
     (unless buffer (error "Cannot retrieve %s" url))
     (unwind-protect
@@ -99,6 +99,7 @@
 
 (defun be/github-asset (repository regexp)
   "Return the latest stable release asset of REPOSITORY matching REGEXP."
+  (require 'url)
   (let ((buffer (let* ((token (or (getenv "GH_TOKEN") (getenv "GITHUB_TOKEN")))
                       (url-request-extra-headers
                        (when token (list (cons "Authorization" (concat "Bearer " token))))))
@@ -143,6 +144,7 @@
   "Install archive URL for NAME and return its EXECUTABLE path.
 FILENAME determines the archive format.  Validate DIGEST when GitHub supplies it.
 Only replace an earlier private installation after extraction finds the binary."
+  (require 'url-handlers)
   (let* ((target (be/tool-directory name))
          (parent (file-name-directory (directory-file-name target)))
          (archive (make-temp-file "emacs-tool-" nil (concat "-" filename)))
@@ -270,6 +272,7 @@ MINIMUM defaults to 21; each runtime is cached separately."
                                    (alist-get 'name asset) name (alist-get 'digest asset))))
          (be/tool-wrapper name (list (be/java-runtime) "-jar" jar))))
       ("jdtls"
+       (require 'url)
        (let* ((java (be/java-runtime 25))
               (base "https://download.eclipse.org/jdtls/snapshots/")
               (buffer (url-retrieve-synchronously (concat base "latest.txt") t t 30))

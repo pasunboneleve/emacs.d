@@ -63,6 +63,25 @@ libraries cannot supply features missing from the Emacs core. Updates may
 occasionally need another explicit exception here; the configuration does not
 guess an arbitrary older revision or disable dependency checks.
 
+`early-init.el` sets lexical binding as the global default for region and
+expression evaluation in new buffers. Every
+configuration source also declares lexical binding explicitly. Loaded files
+follow their native loader's policy: Emacs 29 keeps undeclared files dynamic
+(and `eval-buffer` also uses the file header rather than this default),
+while newer Emacs can use the default. Explicit file declarations still take
+precedence, and existing compiled libraries keep their compiled semantics.
+Legacy undeclared source can therefore behave differently on newer Emacs;
+the setting is not a security fix by itself. Distribution site files run
+before user configuration, so their missing-declaration warnings can remain.
+
+Installer network libraries load only when an installer needs them, keeping
+their `map` dependency out of helper loading. The bootstrap activates managed
+`map` before recipe menus or the log viewer load URL/authentication/JSON.
+Initial events and warnings are retained; only creating the log viewer is
+deferred during that prerequisite phase. Emacs can already have
+`seq` and `eldoc` loaded before user initialization; their compatibility
+upgrades remain necessary on older supported versions.
+
 Use `M-x elpaca-update-all` for package updates. For failed packages, inspect
 `M-x elpaca-log`, fix the reported cause, and use `M-x elpaca-rebuild`. Then
 revisit the file or invoke its first-use command. Installed packages from older

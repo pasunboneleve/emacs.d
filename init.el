@@ -68,10 +68,11 @@
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
 (defvar elpaca-sources-directory (expand-file-name "sources/" elpaca-directory))
-(defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
+(defvar elpaca-order '(elpaca :inherit nil :type git :protocol https
+                              :repo "https://github.com/progfolio/elpaca.git"
                               :ref nil :depth 1
                               :files (:defaults "elpaca-test.el" (:exclude "extensions"))
-                              :build (:not elpaca--activate-package)))
+                              :build (:not elpaca--activate-package elpaca-activate)))
 (let* ((repo  (expand-file-name "elpaca/" elpaca-sources-directory))
        (build (expand-file-name "elpaca/" elpaca-builds-directory))
        (order (cdr elpaca-order))
@@ -111,7 +112,13 @@
 (elpaca-subscribe 'finished #'be/restore-lazy-modes)
 (add-hook 'elpaca-recipe-functions #'be/package-compatibility)
 (add-hook 'after-init-hook #'elpaca-process-queues)
-(elpaca `(,@elpaca-order))
+;; The log viewer also needs map; record events but open it after this phase.
+(let ((elpaca-log-functions nil))
+  (elpaca `(,@elpaca-order))
+  (elpaca (map :inherit nil :type git :protocol https
+               :repo "https://github.com/emacs-straight/map"
+               :branch "master" :depth 1 :files (:defaults) :main "map.el"))
+  (elpaca-wait))
 
 (defun be/elpaca-drop-plist-key (plist key)
   "Return PLIST without KEY."
@@ -166,7 +173,7 @@ queue after all declarations have been read."
                              :url "https://elpa.gnu.org/packages/external-completion.tar"))
 (elpaca (refactor :inherit nil :type tar
                   :url "https://elpa.gnu.org/packages/refactor.tar"))
-(dolist (package '(compat transient seq map project xref eldoc eglot flymake jsonrpc))
+(dolist (package '(compat transient seq project xref eldoc eglot flymake jsonrpc))
   (eval `(elpaca ,package)))
 (when (< emacs-major-version 30)
   (elpaca which-key))

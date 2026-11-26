@@ -5,6 +5,8 @@
 (require 'ert)
 (require 'cl-lib)
 (require 'warnings)
+(require 'url)
+(require 'url-handlers)
 (setq load-prefer-newer t)
 (defconst be/tools-test-root
   (file-name-directory (directory-file-name (file-name-directory load-file-name))))

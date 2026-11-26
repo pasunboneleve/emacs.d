@@ -14,6 +14,8 @@ this is a collection trigger, not a hard process-memory limit.
 
 The bootstrap check binds `after-init-time` to nil while loading configuration,
 matching real startup so duplicate Elpaca orders cannot hide behind batch mode.
+Separate child-process tests check lexical region defaults, explicit dynamic-binding
+overrides, and that installer bootstrap does not load network libraries early.
 
 The shared runner checks Lisp syntax, portability ERT tests, real GPG key
 creation and reuse, package bootstrap, first-use file modes and tree-sitter
@@ -50,6 +52,9 @@ regressions cannot hide behind previous builds.
 `main` requires a PR and the GitHub Actions `validate` check, including for
 administrators. Merge commits retain the individual changes. Version tags
 are created only after the release PR is merged and its post-merge CI passes.
+Published tags are immutable. Each bugfix release increments the patch version
+and gets its own changelog section and new tag. The pre-work configuration is
+preserved by `pre-2026-11-26`; later fixes never replace that reference.
 
 `VERSION` and the dated section in `CHANGELOG.md` identify the intended version
 tag. This is a tag-only release: there are no binary artifacts to publish.
