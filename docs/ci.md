@@ -14,7 +14,7 @@ this is a collection trigger, not a hard process-memory limit.
 
 The bootstrap check binds `after-init-time` to nil while loading configuration,
 matching real startup so duplicate Elpaca orders cannot hide behind batch mode.
-Separate child-process tests check lexical defaults, explicit dynamic-binding
+Separate child-process tests check lexical region defaults, explicit dynamic-binding
 overrides, and that installer bootstrap does not load network libraries early.
 
 The shared runner checks Lisp syntax, portability ERT tests, real GPG key

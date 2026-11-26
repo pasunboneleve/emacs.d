@@ -35,9 +35,9 @@
              (unless (default-value 'lexical-binding) (error "Lexical default is disabled"))
              (with-temp-buffer
                (insert "(setq be/lexical-test-closure (let ((captured 42)) (lambda () captured)))")
-               (eval-buffer))
+               (eval-region (point-min) (point-max)))
              (unless (= (funcall be/lexical-test-closure) 42)
-               (error "Buffer evaluation did not use the lexical default"))
+               (error "Region evaluation did not use the lexical default"))
              (load ,(expand-file-name "lexical.el" directory) nil t)
              (unless (= (funcall be/lexical-test-closure) 42)
                (error "Explicit lexical source did not capture scope"))

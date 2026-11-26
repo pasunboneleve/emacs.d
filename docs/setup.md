@@ -63,9 +63,11 @@ libraries cannot supply features missing from the Emacs core. Updates may
 occasionally need another explicit exception here; the configuration does not
 guess an arbitrary older revision or disable dependency checks.
 
-`early-init.el` sets lexical binding as the global evaluation default. Every
+`early-init.el` sets lexical binding as the global default for region and
+expression evaluation in new buffers. Every
 configuration source also declares lexical binding explicitly. Loaded files
-follow their native loader's policy: Emacs 29 keeps undeclared files dynamic,
+follow their native loader's policy: Emacs 29 keeps undeclared files dynamic
+(and `eval-buffer` also uses the file header rather than this default),
 while newer Emacs can use the default. Explicit file declarations still take
 precedence, and existing compiled libraries keep their compiled semantics.
 Legacy undeclared source can therefore behave differently on newer Emacs;
